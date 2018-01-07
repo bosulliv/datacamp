@@ -1,0 +1,285 @@
+---
+title: "Text Mining Bag of Words"
+output: html_notebook
+---
+
+```{r}
+# Load qdap
+#install.packages("qdap")
+library(qdap)
+
+new_text <- "DataCamp is the first online learning platform that focuses on building the best learning experience specifically for Data Science. We have offices in Boston and Belgium and to date, we trained over 250,000 (aspiring) data scientists in over 150 countries. These data science enthusiasts completed more than 9 million exercises. You can take free beginner courses, or subscribe for $25/month to get access to all premium courses."
+
+
+# Print new_text to the console
+new_text
+
+# Find the 10 most frequent terms: term_count
+term_count <- freq_terms(new_text, 10)
+
+# Plot term_count
+plot(term_count)
+```
+
+```{r}
+# Import text data
+tweets <- read.csv("https://assets.datacamp.com/production/course_935/datasets/coffee.csv",
+                   stringsAsFactors = FALSE)
+
+# View the structure of tweets
+str(tweets)
+
+# Print out the number of rows in tweets
+nrow(tweets)
+
+# Isolate text from tweets: coffee_tweets
+coffee_tweets <- tweets$text
+```
+
+```{r}
+# Load tm
+library(tm)
+
+# Make a vector source: coffee_source
+coffee_source <- VectorSource(coffee_tweets)
+```
+
+```{r}
+## coffee_source is already in your workspace
+
+# Make a volatile corpus: coffee_corpus
+coffee_corpus = VCorpus(coffee_source)
+
+# Print out coffee_corpus
+coffee_corpus
+
+# Print data on the 15th tweet in coffee_corpus
+coffee_corpus[[15]]
+
+# Print the content of the 15th tweet in coffee_corpus
+coffee_corpus[[15]]$content
+```
+
+```{r}
+# tm expects dataframes in a tidy format - so let's set an munge'ing exercise to
+library(dplyr)
+
+# core R is enough! No need for dplyr
+# I planned to use gather() to turn Author1/2 cols into variables in a author col
+Author1 <- c("Text mining is a great time.",
+             "Text analysis provides insights",
+             "qdap and tm are used in text mining")
+Author2 <- c("R is a great language",
+             "R has many uses",
+             "DataCamp is cool!")
+m_tweets <- data.frame(text = c(Author1, Author2))
+m_tweets 
+
+# dplyr way isn't as readible - core R wins this one
+# m_tweets <- mutate(m_tweets, doc_id = rownames(m_tweets))
+m_tweets$doc_id <- rownames(m_tweets)
+m_tweets
+
+example_text <- m_tweets
+```
+
+```{r}
+# tm takes a different data format now - rejig significantly
+
+# Print example_text to the console
+example_text 
+
+# Create a DataframeSource on columns 2 and 3: df_source
+# This newer version of tm requires vastly different data frame structure
+df_source <- DataframeSource(example_text)
+
+# Convert df_source to a corpus: df_corpus
+df_corpus <- VCorpus(df_source)
+
+# Examine df_corpus
+df_corpus
+
+# Create a VectorSource on column 3: vec_source
+vec_source <- VectorSource(example_text$text[4:6])
+
+# Convert vec_source to a corpus: vec_corpus
+vec_corpus <- VCorpus(vec_source)
+
+# Examine vec_corpus
+vec_source
+```
+
+```{r}
+# Create the object: text
+text = "<b>She</b> woke up at       6 A.M. It\'s so early!  She was only 10% awake and began drinking coffee in front of her computer."
+
+# All lowercase
+tolower(text)
+
+# Remove punctuation
+removePunctuation(text)
+
+# Remove numbers
+removeNumbers(text)
+
+# Remove whitespace
+stripWhitespace(text)
+```
+
+```{r}
+# Create the object: text
+text = "<b>She</b> woke up at       6 A.M. It\'s so early!  She was only 10% awake and began drinking coffee in front of her computer."
+
+## text is still loaded in your workspace
+
+# Remove text within brackets
+bracketX(text)
+
+# Replace numbers with words
+replace_number(text)
+
+# Replace abbreviations
+replace_abbreviation(text)
+
+# Replace contractions
+replace_contraction(text)
+
+# Replace symbols with words
+replace_symbol(text)
+
+```
+
+```{r}
+## text is preloaded into your workspace
+
+# List standard English stop words
+# These are words that are so common, they convey little information
+stopwords("en")
+
+# Print text without standard stop words
+
+
+# Add "coffee" and "bean" to the list: new_stops
+
+
+# Remove stop words from text
+
+```
+
+```{r}
+## text is preloaded into your workspace
+
+# List standard English stop words
+stopwords("en")
+
+# Print text without standard stop words
+removeWords(text, stopwords("en"))
+
+# Add "coffee" and "bean" to the list: new_stops
+new_stops <- c("coffee", "bean", stopwords("en"))
+
+# Remove stop words from text
+removeWords(text, new_stops)
+
+```
+
+```{r}
+# Create complicate
+complicate <- c("complicated", "complication", "complicatedly")
+
+# Perform word stemming: stem_doc
+stem_doc <- stemDocument(complicate)
+
+# Create the completion dictionary: comp_dict
+comp_dict <- c("complicate")
+
+# Perform stem completion: complete_text 
+complete_text <- stemCompletion(stem_doc, comp_dict)
+
+# Print complete_text
+complete_text
+```
+
+```{r}
+# Hidden data
+text_data <- "In a complicated haste, Tom rushed to fix a new complication, too complicatedly."
+comp_dict <- c("In", "a", "complicate", "haste", "Tom", "rush", "to", "fix", "new", "too")
+
+# Remove punctuation: rm_punc
+rm_punc <- removePunctuation(text_data)
+
+# Create character vector: n_char_vec
+n_char_vec <- unlist(strsplit(rm_punc, split = ' '))
+
+# Perform word stemming: stem_doc
+stem_doc <- stemDocument(n_char_vec)
+
+# Print stem_doc
+stem_doc
+
+# Re-complete stemmed document: complete_doc
+complete_doc <- stemCompletion(stemDocument(n_char_vec), comp_dict)
+
+# Print complete_doc
+complete_doc
+
+# Print complete_doc
+complete_doc
+```
+
+```{r}
+# link in local data
+tweet_corp <- coffee_corpus
+
+# Alter the function code to match the instructions
+clean_corpus <- function(corpus){
+  corpus <- tm_map(corpus, stripWhitespace)
+  corpus <- tm_map(corpus, removePunctuation)
+  corpus <- tm_map(corpus, content_transformer(tolower))
+  corpus <- tm_map(corpus, removeWords, c(stopwords("en"), c("coffee", "mug")))
+  return(corpus)
+}
+
+# Apply your customized function to the tweet_corp: clean_corp
+clean_corp <- clean_corpus(tweet_corp)
+
+# Print out a cleaned up tweet
+clean_corp[[227]][1]
+
+# Print out the same tweet in original form
+tweets$text[[227]]
+```
+
+```{r}
+# Create the dtm from the corpus: coffee_dtm
+coffee_dtm <- DocumentTermMatrix(clean_corp)
+
+# Print out coffee_dtm data
+coffee_dtm
+
+# Convert coffee_dtm to a matrix: coffee_m
+coffee_m <- as.matrix(coffee_dtm)
+
+# Print the dimensions of coffee_m
+dim(coffee_m)
+
+# Review a portion of the matrix
+coffee_m[148:150, 2587:2590]
+```
+
+```{r}
+# Create the tdm from the corpus: coffee_tdm
+coffee_tdm <- TermDocumentMatrix(clean_corp)
+
+# Print out coffee_tdm data
+coffee_tdm
+
+# Convert coffee_tdm to a matrix: coffee_m
+coffee_m <- as.matrix(coffee_tdm)
+
+# Print the dimensions of coffee_m
+dim(coffee_m)
+
+# Review a portion of the matrix
+coffee_m[2587:2590, 148:150]
+```
