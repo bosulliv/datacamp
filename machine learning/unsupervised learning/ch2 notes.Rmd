@@ -1,0 +1,95 @@
+---
+title: "Unsuperised Learning"
+output: html_notebook
+---
+
+```{r}
+# Create hierarchical clustering model: hclust.out
+hclust.out <- hclust(dist(x))
+
+# Inspect the result
+summary(hclust.out)
+```
+
+```{r}
+plot(hclust.out)
+abline(h = 200, col = "red")
+```
+
+```{r}
+plot(cutree(hclust.out, h = 200))
+```
+
+```{r}
+# Cut by height
+cutree(hclust.out, h = 200)
+
+# Cut by number of clusters
+plot(x[ ,c("Attack", "Defense")], col = cutree(hclust.out, k = 2))
+```
+
+### Practical matters
+
+linkage to calculate distance - avoid centroid.
+
+kmeans is senstive to variables on difference scales. So a very common approach is to rescale all the data in every variable to a scale which gives mean = 0 and sd = 1 
+
+This is done with the scale() method 
+
+```{r}
+x <- iris[,c("Sepal.Length", "Petal.Width")]
+
+# Cluster using complete linkage: hclust.complete
+hclust.complete <- hclust(dist(x), method = "complete")
+
+# Cluster using average linkage: hclust.average
+hclust.average <- hclust(dist(x), method = "average")
+
+# Cluster using single linkage: hclust.single
+hclust.single <- hclust(dist(x), method = "single")
+
+# Plot dendrogram of hclust.complete
+plot(hclust.complete, main = "Complete")
+
+# Plot dendrogram of hclust.average
+plot(hclust.average, main = "Average")
+
+# Plot dendrogram of hclust.single
+plot(hclust.single, main = "Single")
+```
+
+Complete 
+
+```{r}
+# get pokemon data
+pokemon <- read.csv("https://assets.datacamp.com/production/course_1815/datasets/Pokemon.csv")
+
+pok <- pokemon[, c("HitPoints", "Attack", "Defense", "SpecialAttack", "SpecialDefense", "Speed")]
+
+# View column means
+colMeans(pok)
+
+# View column standard deviations
+apply(pok, 2, sd)
+
+# Scale the data
+pokemon.scaled <- scale(pok)
+
+# Create hierarchical clustering model: hclust.pokemon
+hclust.pokemon <- hclust(dist(pokemon.scaled), method = "complete")
+```
+
+```{r}
+# Apply cutree() to hclust.pokemon: cut.pokemon
+cut.pokemon <- cutree(hclust.pokemon, k = 3)
+
+# Compare methods
+table(cut.pokemon, km.out$cluster)
+```
+
+
+
+
+
+
+
