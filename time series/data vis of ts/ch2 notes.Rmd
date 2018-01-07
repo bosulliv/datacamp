@@ -1,0 +1,126 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 2
+
+```{r}
+# Prep data
+apple <- read.csv(file = "https://assets.datacamp.com/production/course_2300/datasets/dataset_2_1.csv",
+                 sep = " ",
+                 colClasses = c("Date", "numeric"),
+                 stringsAsFactors = FALSE
+                 )
+data <- as.xts(apple[,2], order.by = apple[,1])
+```
+
+```{r}
+library(TTR)
+# Plot Apple's stock price 
+plot(data)
+
+# Create a time series called rtn
+rtn <- ROC(data)
+rtn <- rtn[-1,]
+
+# Plot Apple daily price and daily returns 
+par(mfrow = c(1,2))
+plot(data)
+plot(rtn)
+```
+
+```{r}
+rtn <- coredata(rtn)
+
+# Create a histogram of Apple stock returns
+hist(rtn, probability = TRUE, main = "Apple stock return distribution")
+
+# Add a density line
+lines(density(rtn))
+
+# Redraw a thicker, red density line
+lines(density(rtn), lwd = 2, col = "red")
+```
+
+```{r}
+# Draw box and whisker plot for the Apple returns
+boxplot(rtn)
+
+# Draw a box and whisker plot of a normal distribution
+boxplot(rnorm(1000))
+
+# Redraw both plots on the same graphical window
+par(mfrow = c(2,1))
+boxplot(rtn, horizontal = TRUE)
+boxplot(rnorm(1000), horizontal = TRUE)
+```
+
+```{r}
+# Draw autocorrelation plot
+acf(rtn, main = "Apple return autocorrelation")
+
+# Redraw with a maximum lag of 10
+acf(rtn, lag.max = 10, main = "Apple return autocorrelation")
+```
+
+```{r}
+# Create q-q plot
+qqnorm(rtn, main = "Apple return QQ-plot")
+
+# Add a red line showing normality
+qqline(rtn, col = "red")
+
+# Compare to a normal dist... being cleverer than the exercise needed
+qqline(rnorm(1000, mean = mean(rtn), sd = sd(rtn)), col = "blue")
+```
+
+```{r}
+# Draw histogram and add red density line
+hist(rtn, probability = TRUE)
+lines(density(rtn), col = "red")
+
+# Draw box and whisker plot
+boxplot(rtn)
+
+# Draw autocorrelogram
+acf(rtn)
+
+# Draw q-q plot and add a red line for normality
+qqnorm(rtn)
+qqline(rtn, col = "red")
+```
+
+```{r}
+# Set up 2x2 graphical window
+par(mfrow = c(2, 2))
+
+# Recreate all four plots
+hist(rtn, probability = TRUE)
+lines(density(rtn), col = "red")
+
+boxplot(rtn)
+
+acf(rtn)
+
+qqnorm(rtn)
+qqline(rtn, col = "red")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
