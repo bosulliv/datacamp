@@ -1,0 +1,116 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 5 - Moving Average
+
+```{r}
+# Generate MA model with slope 0.5
+x <- arima.sim(model = list(ma = 0.5), n = 100)
+
+# Generate MA model with slope 0.9
+y <- arima.sim(model = list(ma = 0.9), n = 100)
+
+# Generate MA model with slope -0.5
+z <- arima.sim(model = list(ma = -0.5), n = 100)
+
+# Plot all three models together
+plot.ts(cbind(x,y,z))
+
+```
+
+```{r}
+# Calculate ACF for x
+acf(x)
+
+# Calculate ACF for y
+acf(y)
+
+# Calculate ACF for z
+acf(z)
+
+```
+
+```{r}
+# Prep data
+install.packages("Edcat")
+data(Mishkin, package = "Edcat")
+```
+
+
+```{r}
+# prep data
+x <- c(
+  -0.291042, 0.3776308, -0.4126828, 0.7906086, 2.62597, 1.955411, 1.321477, -0.5627602, -1.004802, -1.944919, -1.300291, -0.968193, -1.620748, -0.2472338, -0.9111958, -0.03614666, 0.2032681, 0.3234347, 1.032231, -0.06602086, 1.104178, 3.576659, 1.924563, 0.2550622, 0.09188144, 0.8319344, 0.5777712, -1.189093, -0.9272387, -0.2882693, 0.09173721, -0.248123, -1.738671, 0.5994377, 1.404134, 1.942164, 2.001548, 2.473196, 2.005346, -0.5468065, -0.08531535, 0.05460297, 1.08003, 0.09135667, 0.03767858, 1.061848, -0.5706266, -0.1487458, -0.2969124, -2.915641, -0.8916214, 0.06409581, -1.89441, -0.8205165, 0.2961602, 1.24526, 2.075609, 0.8195061, -0.445218, -0.6189849, -0.3081785, -0.779202, -0.6191043, 0.5408932, 0.3125475, -0.4156572, -0.637457, -1.197746, 0.3817322, 0.01097415, -0.550275, 0.2715091, -1.323442, -1.865135, -1.995716, 0.09053037, -1.318233, -1.268741, 0.2593607, 0.9866206, 1.745939, 1.880107, 0.4349301, -0.9861437, 0.2288948, 1.780959, 3.71337, 2.017594, -0.4606954, -1.422151, -0.6041215, 1.405434, 2.358526, 1.907956, 2.051875, 1.571973, -0.7549126, -1.396431, -0.5222505, -0.2984297
+)
+
+# Fit the MA model to x
+arima(x, order = c(0,0,1))
+
+# Paste the slope (ma1) estimate below
+0.7928
+
+# Paste the slope mean (intercept) estimate below
+0.1589
+
+# Paste the innovation variance (sigma^2) estimate below
+0.9576
+
+# Fit the MA model to Nile
+MA <- arima(Nile, order = c(0,0,1))
+print(MA)
+
+# Plot Nile and MA_fit 
+ts.plot(Nile)
+MA_fit <- Nile - resid(MA)
+points(MA_fit, type = "l", col = 2, lty = 2)
+```
+
+```{r}
+# Make a 1-step forecast based on MA
+predict_MA <- predict(MA)
+
+# Obtain the 1-step forecast using $pred[1]
+predict_MA$pred[1]
+
+# Make a 1-step through 10-step forecast based on MA
+predict(MA, n.ahead = 10)
+
+# Plot the Nile series plus the forecast and 95% prediction intervals
+ts.plot(Nile, xlim = c(1871, 1980))
+MA_forecasts <- predict(MA, n.ahead = 10)$pred
+MA_forecast_se <- predict(MA, n.ahead = 10)$se
+points(MA_forecasts, type = "l", col = 2)
+points(MA_forecasts - 2*MA_forecast_se, type = "l", col = 2, lty = 2)
+points(MA_forecasts + 2*MA_forecast_se, type = "l", col = 2, lty = 2)
+```
+
+```{r}
+# prep data
+AR <-arima(Nile, order  = c(1,0,0))
+AR_fit <- Nile - resid(AR)
+
+# Find correlation between AR_fit and MA_fit
+cor(AR_fit, MA_fit)
+
+# Find AIC of AR
+AIC(AR)
+
+# Find AIC of MA
+AIC(MA)
+
+# Find BIC of AR
+BIC(AR)
+
+# Find BIC of MA
+BIC(MA)
+```
+
+
+
+
+
+
+
+

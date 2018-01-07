@@ -1,0 +1,109 @@
+---
+title: "R Notebook"
+output: 
+  html_notebook:
+    toc: true
+---
+
+# Chapter 4
+
+```{r}
+# Simulate an AR model with 0.5 slope
+x <- arima.sim(model = list(ar = 0.5), n = 100)
+
+# Simulate an AR model with 0.9 slope
+y <- arima.sim(model = list(ar = 0.9), n = 100)
+
+# Simulate an AR model with -0.75 slope
+z <- arima.sim(model = list(ar =-0.75), n = 100)
+
+# Plot your simulated data
+plot.ts(cbind(x, y, z))
+```
+
+
+```{r}
+# Calculate the ACF for x
+acf(x)
+
+# Calculate the ACF for y
+acf(y)
+
+# Calculate the ACF for z
+acf(z)
+
+```
+
+```{r}
+# Simulate and plot AR model with slope 0.9 
+x <- arima.sim(model = list(ar = 0.9), n = 200)
+ts.plot(x)
+acf(x)
+
+# Simulate and plot AR model with slope 0.98
+y <- arima.sim(model = list(ar = 0.98), n = 200)
+ts.plot(x)
+acf(x)
+
+# Simulate and plot RW model
+z <- arima.sim(model = list(order = c(0,1,0)), n = 200)
+ts.plot(z)
+acf(z)
+
+```
+
+```{r}
+# prep data
+x<-c(
+  0.8293412, 0.4582745, 0.05278152, 0.06302386, -0.7364489, -0.5680549, -0.05563039, -0.147577, -0.4607179, -0.7569944, -1.570928, -0.2314332, -1.261477, -0.7377359, -0.7502875, -1.921008, -2.472868, -3.551733, -1.912493, -4.195137, -2.81786, -3.1387, -1.295846, -0.7964083, 0.8304717, -0.2101606, -0.3134617, 0.05866471, 1.527055, 3.760888, 3.254509, 2.585624, 1.214001, 1.490234, 2.388775, 3.565615, 3.842863, 4.940023, 4.684693, 3.246506, 2.39817, 2.107419, 1.644088, -0.1847806, -1.972322, -0.3428394, -2.11707, -2.692767, -2.260532, -2.455535, -2.079618, -2.384692, -1.552852, -2.665009, -3.955674, -2.090653, -1.691974, -1.30315, -2.698256, -2.093301, -2.658122, -2.572089, -1.598519, -1.712539, -1.587043, -1.102723, -1.194398, -1.332658, -0.3001177, -0.218454, 1.67546, 1.199136, 1.165281, 1.656994, -0.5312163, -0.9226871, -0.9120866, -0.6911409, -0.5167889, -0.8110674, 1.785289, 3.081533, 1.497907, 1.814418, 2.774034, 2.592283, 2.432849, 0.6986269, -0.3154005, -1.048721, 1.062419, 1.6936, 2.754535, 1.545779, 0.9082476, 2.490944, 1.925785, -0.2963624, -0.7313748, -1.395322
+)
+
+# Fit the AR model to x
+arima(x, order = c(1, 0, 0))
+
+# Copy and paste the slope (ar1) estimate
+0.8575
+
+# Copy and paste the slope mean (intercept) estimate
+-0.0948
+
+# Copy and paste the innovation variance (sigma^2) estimate
+1.022
+
+# Fit the AR model to AirPassengers
+AR <- arima(AirPassengers, order = c(1, 0, 0))
+print(AR)
+
+# Run the following commands to plot the series and fitted values
+ts.plot(AirPassengers)
+AR_fitted <- AirPassengers - residuals(AR)
+points(AR_fitted, type = "l", col = 2, lty = 2)
+
+```
+
+```{r}
+# Fit an AR model to Nile
+AR_fit <-arima(Nile, order  = c(1,0,0))
+print(AR_fit)
+
+# Use predict() to make a 1-step forecast
+predict_AR <- predict(AR_fit)
+
+# Obtain the 1-step forecast using $pred[1]
+predict_AR$pred[1]
+
+# Use predict to make 1-step through 10-step forecasts
+predict(AR_fit, n.ahead = 10)
+
+# Run to plot the Nile series plus the forecast and 95% prediction intervals
+ts.plot(Nile, xlim = c(1871, 1980))
+AR_forecast <- predict(AR_fit, n.ahead = 10)$pred
+AR_forecast_se <- predict(AR_fit, n.ahead = 10)$se
+points(AR_forecast, type = "l", col = 2)
+points(AR_forecast - 2*AR_forecast_se, type = "l", col = 2, lty = 2)
+points(AR_forecast + 2*AR_forecast_se, type = "l", col = 2, lty = 2)
+
+```
+
+
+

@@ -1,0 +1,151 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+# Print the Nile dataset
+print(Nile)
+
+# List the number of observations in the Nile dataset
+length(Nile)
+
+# Display the first 10 elements of the Nile dataset
+head(Nile, n = 10)
+
+# Display the last 12 elements of the Nile dataset
+tail(Nile, n = 12)
+```
+
+```{r}
+# Plot the Nile data
+plot(Nile)
+
+# Plot the Nile data with xlab and ylab arguments
+plot(Nile, xlab = "Year", ylab = "River Volume (1e9 m^{3})")
+
+# Plot the Nile data with xlab, ylab, main, and type arguments
+plot(Nile, xlab = "Year", ylab = "River Volume (1e9 m^{3})", main = "Annual River Nile Volume at Aswan, 1871-1970", type ="b")
+```
+
+
+```{r}
+# Plot the continuous_series using continuous time indexing
+par(mfrow=c(2,1))
+plot(continuous_time_index,continuous_series, type = "b")
+
+# Make a discrete time index using 1:20 
+discrete_time_index <- 1:20
+
+# Now plot the continuous_series using discrete time indexing
+plot(discrete_time_index,continuous_series, type = "b")
+
+```
+
+```{r}
+# Plot AirPassengers
+plot(AirPassengers)
+
+# View the start and end dates of AirPassengers
+start(AirPassengers)
+end(AirPassengers)
+
+# Use time(), deltat(), frequency(), and cycle() with AirPassengers 
+time(AirPassengers)
+deltat(AirPassengers)
+frequency(AirPassengers)
+cycle(AirPassengers)
+
+```
+
+```{r}
+# Prep data
+AirPassengers[85:96] <- NA
+
+# Plot the AirPassengers data
+plot(AirPassengers)
+
+# Compute the mean of AirPassengers
+mean(AirPassengers, na.rm = TRUE)
+
+# Impute mean values to NA in AirPassengers
+AirPassengers[85:96] <- mean(AirPassengers, na.rm = TRUE)
+
+# Generate another plot of AirPassengers
+plot(AirPassengers)
+
+# Add the complete AirPassengers data to your plot
+rm(AirPassengers)
+points(AirPassengers, type = "l", col = 2, lty = 3)
+
+```
+
+```{r}
+# data prep
+data_vector <- c(
+2.052194, 4.292885, 3.329413, 3.508595, 0.0009576938, 1.921719, 0.7978134, 0.2999543, 0.9435688, 0.5748283, -0.00340059, 0.3448649, 2.222976, 0.1763145, 2.709762, 1.250195, -0.4007165, 0.8852732, -1.585242, -2.282928, -2.560953, -3.125996, -2.86603, -1.784701, -1.889491, -2.725535, -2.103314, -0.01742569, -0.3613204, -2.90084, -3.284744, -2.868459, -1.950507, -4.880189, -3.263461, -1.639606, -3.301258, -2.633125, -1.705835, -2.211983, -0.5170595, 0.07525081, -0.8406995, -1.402268, -0.1382114, -1.406595, -2.304694, 1.507389, 0.7118679, -1.130052)
+
+hist(data_vector)
+
+# Use print() and plot() to view data_vector
+print(data_vector)
+plot(data_vector)
+
+# Convert data_vector to a ts object with start = 2004 and frequency = 4
+# freq = number of times a year?
+time_series <- ts(data_vector, start = 2004, frequency = 4)
+
+# Use print() and plot() to view time_series
+print(time_series)
+plot(time_series)
+
+```
+
+```{r}
+# Prep data
+eu_stocks <- EuStockMarkets
+
+# Check whether eu_stocks is a ts object
+is.ts(eu_stocks)
+
+# View the start, end, and frequency of eu_stocks
+start(eu_stocks)
+end(eu_stocks)
+frequency(eu_stocks)
+
+# Generate a simple plot of eu_stocks
+plot(eu_stocks)
+
+# Use ts.plot with eu_stocks
+ts.plot(eu_stocks, col = 1:4, xlab = "Year", ylab = "Index Value", main = "Major European Stock Indices, 1991-1998")
+
+# Add a legend to your ts.plot
+legend("topleft", colnames(eu_stocks), lty = 1, col = 1:4, bty = "n")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
