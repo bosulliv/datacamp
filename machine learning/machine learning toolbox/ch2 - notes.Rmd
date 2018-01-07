@@ -1,0 +1,131 @@
+---
+title: "Machine Learning Toolbox"
+output: html_notebook
+---
+
+# Chapter 2: Classification Models
+
+
+```{r}
+install.packages("caret", dependencies = TRUE)
+```
+
+```{r}
+load("~/Documents/Code/R/datacamp/machine learning toolbox/Sonar.RData")
+data(Sonar)
+```
+
+```{r}
+# Get the Sonar data, and many more...
+
+#install.packages("mlbench")
+library(mlbench)
+```
+
+```{r}
+data(Sonar)
+
+# Shuffle row indices: rows
+rows = sample(nrow(Sonar))
+
+# Randomly order data: Sonar
+Sonar <- Sonar[rows, ]
+
+# Identify row to split on: split
+split <- round(nrow(Sonar) * .60)
+
+# Create train
+train = Sonar[1:split, ]
+
+# Create test
+test = Sonar[(split + 1):nrow(Sonar), ]
+```
+
+```{r}
+# Fit glm model: model
+model <- glm(Class ~ ., family = "binomial", data = train)
+
+# Predict on test: p
+p <- predict(model, test, type = "response")
+```
+
+```{r}
+library(caret)
+# Calculate class probabilities: p_class
+p_class <- ifelse(p > 0.50, "M", "R")
+
+# Create confusion matrix
+confusionMatrix(p_class, test$Class)
+```
+
+The model is terrible :) There are lots of false positive and negatives. It is actually worse; "No Information Rate : 0.5783" means we would get better outcomes if a monkey just said Mine all the time.
+
+  * Sensitivy = how often we predict true correctly
+  * Specificity = how often we predict negative correctly
+
+```{r}
+ (12 + 9) / sum(12,26,36,9)
+```
+
+```{r}
+# Apply threshold of 0.9: p_class
+p_class <- ifelse(p > 0.90, "M", "R")
+
+# Create confusion matrix
+confusionMatrix(p_class, test$Class)
+```
+
+
+```{r}
+# Apply threshold of 0.10: p_class
+p_class <- ifelse(p < 0.10, "R", "M")
+
+# Create confusion matrix
+confusionMatrix(p_class, test$Class)
+```
+
+### ROC curves
+
+Iterate every possible classification threshold - which is then plotted.
+
+```{r}
+library(caTools)
+
+# Predict on test: p
+p <- predict(model, test, type = "response")
+
+# Make ROC curve
+colAUC(p, test$Class, plotROC = TRUE)
+```
+
+### AUC = Area Under Curve
+
+AUC = area under the curve - 1 = perfect 0.5 = random guessing and 0.0 = perfectly wrong all the time! We just invert it to get perfectly right!
+
+Generally want AUC 0.8 or higher, but 0.7 might be usuable
+
+```{r}
+# Create trainControl object: myControl
+myControl <- trainControl(
+  method = "cv",
+  number = 10,
+  summaryFunction = twoClassSummary,
+  classProbs = TRUE, # IMPORTANT!
+  verboseIter = TRUE
+)
+```
+
+```{r}
+train(Class ~ ., Sonar, method = "glm", trControl = myControl)
+
+model
+```
+
+
+
+
+
+
+
+
+
