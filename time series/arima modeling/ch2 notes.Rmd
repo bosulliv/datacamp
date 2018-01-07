@@ -1,0 +1,149 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 2 - AR and MA models
+
+How do we get PACF? That's the magic to combine with ACF to identify MA, AR or ARMA.
+
+   * ACF measure correlation on prior values with error removed.
+   * PACF measures correlation on the error values on prior error values.
+
+Hence:
+
+  * ACF = tail off, PACF = cut off -> **AR**
+  * ACF = cut off, PACF = tail off -> **MA**
+  * ACF = tail off, PACF = tail off -> **ARMA**
+
+In the exercises below, the ttable shows the estimate parameters. We know exactly what these should be because we created them! But this allows us to measure the acuracy of the model on our synthetic data. Match the ar/ma order parameters to the model
+
+```{r}
+# Generate 100 observations from the AR(1) model
+x <- arima.sim(model = list(order = c(1, 0, 0), ar = .9), n = 100) 
+
+# Plot the generated data 
+plot(x)
+
+# Plot the sample P/ACF pair
+plot(acf2(x))
+
+# Fit an AR(1) to the data and examine the t-table
+sarima(x, p = 1, d = 0, q = 0)
+
+# This one is shows ar1(ar order 1 param) = 0.7 when we set sim ar(order 1) =  0.9: Not bad, but not brilliant either
+
+```
+
+```{r}
+x <- arima.sim(model = list(order = c(2, 0, 0), ar = c(1.5, -.75)), n = 200)
+
+# astsa is preloaded
+
+# Plot x
+plot(x)
+
+# Plot the sample P/ACF of x
+plot(acf2(x))
+
+# Fit an AR(2) to the data and examine the t-table
+sarima(x, p = 2, d = 0, q = 0)
+
+# This one is very close ttable shows ar1 = 1.52 and ar2 = -0.78 - very close to our sim paramerters
+```
+
+```{r}
+x <- arima.sim(model = list(order = c(0, 0, 1), ma = -.8), n = 100)
+
+# astsa is preloaded
+
+# Plot x
+plot(x)
+
+# Plot the sample P/ACF of x
+plot(acf2(x))
+
+# Fit an MA(1) to the data and examine the t-table
+sarima(x, p = 0, d = 0, q = 1)
+
+
+```
+
+```{r}
+x <- arima.sim(model = list(order = c(2, 0, 1), ar = c(1, -.9), ma = .8), n = 250)
+
+# astsa is preloaded
+
+# Plot x
+plot(x)
+
+# Plot the sample P/ACF of x
+plot(acf2(x))
+
+# Fit an ARMA(2,1) to the data and examine the t-table
+sarima(x, p = 2, d = 0, q = 1)
+```
+
+
+```{r}
+# prep data
+dl_varve <- diff(log(varve))
+plot(dl_varve)
+
+# Fit an MA(1) to dl_varve.   
+sarima(dl_varve, p = 0, d = 0, q = 1)
+
+# Fit an MA(2) to dl_varve. Improvement?
+sarima(dl_varve, p = 0, d = 0, q = 2)
+
+# Fit an ARMA(1,1) to dl_varve. Improvement?
+sarima(dl_varve, p = 1, d = 0, q = 1)
+
+```
+
+```{r}
+# Fit an MA(1) to dl_varve. Examine the residuals  
+sarima(dl_varve, p = 1, d = 0, q = 0)
+
+# Fit an ARMA(1,1) to dl_varve. Examine the residuals
+sarima(dl_varve, p = 1, d = 0, q = 1)
+
+```
+
+
+```{r}
+# Calculate approximate oil returns
+oil_returns <- diff(log(oil))
+
+# Plot oil_returns. Notice the outliers.
+plot(oil_returns)
+
+# Plot the P/ACF pair for oil_returns
+plot(acf2(oil_returns))
+
+# Assuming both P/ACF are tailing, fit a model to oil_returns
+sarima(oil_returns, p = 1, d = 0, q = 1)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
