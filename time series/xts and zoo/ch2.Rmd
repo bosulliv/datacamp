@@ -1,0 +1,117 @@
+---
+title: "ts() - xts and zoo"
+output: html_notebook
+---
+
+# Chapter 2
+
+```{r}
+# recreate data set
+a <- rnorm(306)
+dates <- seq(as.Date("2015-06-01"), length = 306, by = "days")
+x <- as.xts(a, order.by = dates)
+colnames(x) <- "a"
+
+# Select all of 2016 from x
+x_2016 <- x["2016"]
+
+# Select January 1, 2016 to March 22, 2016
+jan_march <- x["2016/2016-03-22"]
+
+# Verify that jan_march contains 82 rows
+82 == length(jan_march)
+```
+
+```{r eval = FALSE}
+#> index(irreg)
+date_str <- c("2010-01-05 02:30:00 GMT", "2010-01-05 10:32:00 GMT",
+             "2010-01-05 12:03:00 GMT", "2010-01-06 06:01:00 GMT",
+             "2010-01-06 17:55:00 GMT", "2010-01-06 23:42:00 GMT",
+             "2010-01-07 01:14:00 GMT", "2010-01-07 05:00:00 GMT",
+             "2010-01-07 09:40:00 GMT", "2010-01-07 13:14:00 GMT",
+             "2010-01-07 13:22:00 GMT", "2010-01-07 16:12:00 GMT",
+             "2010-01-07 20:10:00 GMT", "2010-01-07 21:52:00 GMT",
+             "2010-01-07 22:22:00 GMT", "2010-01-08 02:35:00 GMT",
+             "2010-01-08 03:29:00 GMT", "2010-01-08 05:06:00 GMT",
+             "2010-01-08 07:48:00 GMT", "2010-01-08 08:16:00 GMT",
+             "2010-01-08 10:06:00 GMT", "2010-01-08 11:29:00 GMT",
+             "2010-01-08 14:49:00 GMT", "2010-01-10 00:11:00 GMT",
+             "2010-01-10 07:39:00 GMT", "2010-01-10 12:09:00 GMT",
+             "2010-01-10 13:39:00 GMT", "2010-01-10 15:41:00 GMT",
+             "2010-01-10 18:33:00 GMT", "2010-01-10 23:46:00 GMT",
+             "2010-01-11 01:43:00 GMT", "2010-01-11 16:50:00 GMT",
+             "2010-01-11 19:43:00 GMT", "2010-01-11 20:17:00 GMT",
+             "2010-01-11 20:33:00 GMT", "2010-01-12 00:59:00 GMT",
+             "2010-01-12 02:13:00 GMT", "2010-01-12 07:46:00 GMT",
+             "2010-01-12 10:14:00 GMT", "2010-01-12 15:00:00 GMT",
+             "2010-01-13 08:07:00 GMT", "2010-01-13 09:28:00 GMT",
+             "2010-01-13 20:37:00 GMT", "2010-01-13 21:40:00 GMT",
+             "2010-01-14 03:06:00 GMT", "2010-01-14 04:51:00 GMT",
+             "2010-01-14 11:14:00 GMT", "2010-01-15 01:04:00 GMT",
+             "2010-01-15 03:36:00 GMT", "2010-01-15 21:18:00 GMT")
+
+dates <- as.POSIXct(date_str)
+irreg <- xts(1:50, order.by = as.POSIXct(dates))
+
+```
+
+```{r}
+# Extract all data from irreg between 8AM and 10AM
+morn_2010 <- irreg["T08:00/T10:00"]
+
+# Extract the observations in morn_2010 for January 13th, 2010
+morn_2010["2010-01-13"]
+```
+
+```{r}
+# recreate data
+data <- 1:10
+dates <- seq(as.Date("2016-06-02"), length = 10, by = "days")
+x <- xts(data, order.by = dates)
+
+dates <- c("2016-06-04", "2016-06-08")
+# Subset x using the vector dates
+x[dates]
+
+# Subset x using dates as POSIXct
+x[as.POSIXct(dates)]
+```
+
+```{r}
+# Prep data 
+# > temps
+# then cut and paste into local temps.tsv text file = bob is your uncle
+temps <- read.zoo("temps.tsv", index.column = 0)
+temps
+
+# Create lastweek using the last 1 week of temps
+lastweek <- xts::last(temps, "1 week")
+
+# Print the last 2 observations in lastweek
+tail(lastweek, n = 2)
+
+# Extract all but the first two days of lastweek
+xts::first(lastweek, "-2 days")
+
+library(xts)
+# Extract the first three days of the second week of temps
+xts::first(xts::last(xts::first(temps, "2 weeks"), "1 week"), "3 days")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

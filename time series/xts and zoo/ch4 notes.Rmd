@@ -1,0 +1,96 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 4
+
+```{r}
+# prep data
+temps <- as.xts(read.zoo("temps.tsv", index.column = 0))
+temps
+
+# Locate the weeks
+endpoints(temps, on = "weeks")
+
+# Locate every two weeks
+endpoints(temps, on = "weeks", k = 2)
+```
+
+
+```{r}
+# Calculate the weekly endpoints
+ep <- endpoints(temps, on = "weeks")
+
+# Now calculate the weekly mean and display the results
+period.apply(temps[, "Temp.Mean"], INDEX = ep, FUN = mean)
+```
+
+```{r}
+# Split temps by week
+temps_weekly <- split(temps, f = "weeks")
+
+# Create a list of weekly means, temps_avg, and print this list
+temps_avg <- lapply(X = temps_weekly, FUN = mean)
+temps_avg
+```
+
+```{r}
+# Use the proper combination of split, lapply and rbind
+temps_1 <- do.call(rbind, lapply(split(temps, "weeks"), function(w) xts::last(w, n = "1 day")))
+
+# Create last_day_of_weeks using endpoints()
+last_day_of_weeks <- endpoints(temps, "weeks")
+
+# Subset temps using last_day_of_weeks 
+temps_2 <- temps[last_day_of_weeks]
+
+```
+
+```{r}
+usd_eur <- as.xts(read.zoo("https://assets.datacamp.com/production/course_1127/datasets/USDEUR.csv", sep = ",", index.column = 0))
+
+# Convert usd_eur to weekly and assign to usd_eur_weekly
+usd_eur_weekly <- to.period(usd_eur, period = "weeks")
+
+# Convert usd_eur to monthly and assign to usd_eur_monthly
+usd_eur_monthly <- to.period(usd_eur, period = "months")
+
+# Convert usd_eur to yearly univariate and assign to usd_eur_yearly
+usd_eur_yearly <- to.period(usd_eur, period = "years", OHLC = FALSE)
+```
+
+```{r}
+# prep data
+eq_mkt <- as.xts(read.zoo("eq_mkt.tsv", index.column = 0))
+
+# Convert eq_mkt to quarterly OHLC
+mkt_quarterly <- to.period(eq_mkt, period = "quarters")
+
+# Convert eq_mkt to quarterly using shortcut function
+mkt_quarterly2 <- to.quarterly(eq_mkt, name = "edhec_equity", indexAt = "firstof")
+```
+
+```{r}
+#install.packages("PerformanceAnalytics")
+library(PerformanceAnalytics)
+library(xts)
+data("edhec")
+
+# Split edhec into years
+edhec_years <- split(edhec , f = "years")
+
+# Use lapply to calculate the cumsum for each year in edhec_years
+edhec_ytd <- lapply(edhec_years, FUN = cumsum )
+
+# Use do.call to rbind the results
+edhec_xts <- do.call(rbind, edhec_ytd)
+plot(edhec_xts)
+```
+
+```{r}
+# Use rollapply to calculate the rolling 3 period sd of eq_mkt
+eq_sd <- rollapply(eq_mkt, width = 3, FUN = sd)
+
+```
+

@@ -1,0 +1,125 @@
+---
+title: "ts() - xts and zoo"
+output: html_notebook
+---
+
+# Chapter 3
+
+```{r}
+a <- xts(c(1,1,1), order.by = as.POSIXct(c("2015-01-24", "2015-01-25", "2015-01-26")))
+b <- xts(c(2), order.by = as.POSIXct("2015-01-24"))
+colnames(a) <- "a"
+colnames(b) <- "b"
+
+# Add a and b
+a + b
+
+# Add a with the numeric value of b
+a + as.numeric(b)
+```
+
+```{r}
+# Add a to b, and fill all missing rows of b with 0
+a + merge(b, index(a), fill = 0)
+
+# Add a to b and fill NAs with the last observation
+a + merge(b, index(a), fill = na.locf)
+```
+
+```{r}
+# Perform an inner join of a and b
+merge(a, b, join = "inner")
+
+# Perform a left-join of a and b, fill missing values with 0
+merge(a, b, join = "left", fill = 0)
+
+```
+
+```{r}
+library(xts)
+# prep data
+temps_june30 <- xts(matrix(c(75,73,63), ncol = 3, byrow = TRUE),
+                    order.by = as.POSIXct("2016-06-30"))
+colnames(temps_june30) <- colnames(temps)
+
+temps_july17 <- xts(matrix(c(79,70,68), ncol = 3, byrow = TRUE),
+                    order.by = as.POSIXct("2016-07-17"))
+colnames(temps_july17) <- colnames(temps)
+
+temps_july18 <- xts(matrix(c(75,70,65), ncol = 3, byrow = TRUE),
+                    order.by = as.POSIXct("2016-07-18"))
+colnames(temps_july18) <- colnames(temps)
+
+# Row bind temps_june30 to temps, assign this to temps2
+temps2 <- xts::rbind.xts(temps, temps_june30)
+
+# Row bind temps_july17 and temps_july18 to temps2, call this temps3
+temps3 <- xts::rbind.xts(temps2, temps_july17, temps_july18)
+
+temps3
+```
+
+```{r}
+# prep data
+store_temps <- temps
+temps <- temps[1:5,]
+temps[2:3,2] <- NA
+temps
+
+# Fill missing values in temps using the last observation
+temps_last <- na.locf(temps)
+
+# Fill missing values in temps using the next observation
+temps_next <- na.locf(temps, fromLast = TRUE)
+```
+
+
+```{r}
+AirPass <- read.zoo("airpass.tsv", index.column = 0)
+
+# Interpolate NAs using linear approximation
+na.approx(AirPass)
+```
+
+```{r}
+# prep data
+x <- xts(5:9, order.by = seq(as.POSIXct("2017-12-26"), length = 5, by = "days"))
+colnames(x) <- "x"
+
+# Create a leading object called lead_x
+lead_x <- xts::lag.xts(x, k = -1)
+
+# Create a lagging object called lag_x
+lag_x <- xts::lag.xts(x, k = 1)
+
+# Merge your three series together and assign to z
+z <- xts::merge.xts(lead_x, x, lag_x)
+```
+
+```{r}
+# prep data 
+AirPass <- read.zoo("airpass_large.tsv", index.column = 0)
+AirPass <- as.matrix(AirPass, ncol = 1)
+colnames(AirPass) <- "passengers"
+AirPass <- as.xts(AirPass)
+
+# Calculate the first difference of AirPass and assign to diff_by_hand
+diff_by_hand <- AirPass - lag(AirPass, k = 1)
+
+# Use merge to compare the first parts of diff_by_hand and diff(AirPass)
+merge( head(diff_by_hand), head(diff(AirPass)) )
+
+# Calculate the first order 12 month difference of AirPass
+diff(AirPass, difference = 1, lag = 12)
+```
+
+
+
+
+
+
+
+
+
+
+
