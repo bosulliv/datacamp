@@ -1,0 +1,72 @@
+---
+title: "Exploratory Data Analysis"
+output: html_notebook
+---
+
+levels(data$col) = uniq
+
+on an entire set of cols
+table(data) or table(data$col1, data$cal2)
+equivalent to SQL SELECT count(col1), count(col1) FROM DATA GROUP BY col1, col2
+
+
+This is a very pretty analysis of:
+
+geom_density(fill = <facet>) 
+
+```{r}
+library(tidyverse)
+
+glimpse(mtcars)
+
+ggplot(mtcars, aes(x =  mpg, color = as.factor(cyl), fill = as.factor(cyl))) +
+  geom_density(alpha = 0.5)
+```
+
+## Distance from Centre
+
+var(x) = sample variance i.e. sum of square distance/ n - 1 (bessel correction for sample)
+
+median and IQR are robust measures of distance from centre. They don't change much with outliers.
+
+## Modality
+
+unimodal
+bimodal
+multimodal
+uniform
+
+Skew = side of long tail
+
+# Case Study
+
+Examining an e-mail dataset, with measures for spam.
+
+```{r}
+# Load packages
+library(ggplot2)
+library(dplyr)
+library(openintro)
+
+# Compute summary statistics
+email %>%
+  group_by(spam) %>%
+  summarize(
+    median(num_char),
+    IQR(num_char))
+
+# Create plot
+email %>%
+  mutate(log_num_char = log(num_char)) %>%
+  ggplot(aes(x = as.factor(spam), y = log_num_char)) +
+  geom_boxplot()
+  
+email %>%
+  mutate(log_num_char = log(num_char)) %>%
+  ggplot(aes(x = log_num_char, fill = as.factor(spam))) +
+  geom_density(alpha= 0.3)
+```
+
+
+
+

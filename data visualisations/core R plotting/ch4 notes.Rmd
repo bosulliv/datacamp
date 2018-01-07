@@ -1,0 +1,52 @@
+---
+title: "R Core Plotting"
+output: html_notebook
+---
+
+# Chapter 4
+
+The ggplot course was a challenge - and at times I found the instructors soft voice deeply annoying. But the old boy in the core plotting course is great - clear, conscise, and delivers the connections at a pace I can connect in my brain whilst remaining engaged. He gave the best description of the QQ plot. Really like his pace, delivery and style. The plots are a bit old school - but its been great practice in helping stich all the new knowledge together.
+
+```{r}
+library(MASS)
+#install.packages("car")
+library(car)
+
+# Set up a two-by-two plot array
+par(mfrow = c(2,2))
+
+# Plot the raw duration data
+plot(geyser$duration, main = "Raw data")
+
+# Plot the normalized histogram of the duration data
+truehist(geyser$duration, main = "Histogram")
+
+# Plot the density of the duration data
+plot(density(geyser$duration), main = "Density")
+
+# Construct the normal QQ-plot of the duration data
+qqPlot(geyser$duration, main = "QQ-plot")
+```
+
+```{r}
+# Load the insuranceData package
+#install.packages("insuranceData")
+library(insuranceData)
+
+# Use the data() function to load the dataCar data frame
+data(dataCar)
+
+# Load the tabplot package
+#install.packages("tabplot")
+suppressPackageStartupMessages(library(tabplot))
+
+str(dataCar)
+
+# Generate the default tableplot() display
+tableplot(dataCar)
+```
+
+
+
+
+

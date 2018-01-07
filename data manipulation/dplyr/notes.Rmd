@@ -1,0 +1,37 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+#install.packages("hflights")
+library(hflights)
+library(dplyr)
+```
+
+```{r}
+names(hflights)
+glimpse(hflights)
+str(hflights)
+```
+
+```{r}
+hist(hflights$DayOfWeek)
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

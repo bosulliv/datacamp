@@ -1,0 +1,36 @@
+---
+title: "Introduction to Data"
+output: html_notebook
+---
+
+### Random sample
+
+  * ignore any grouping
+  * take a random sample of population
+
+### Stratified sample
+
+  * split the population into groups
+    * select an equal number of random samples from each group
+
+### Cluster sample
+
+  * split the population into groups
+  * randomly pick some of the groups
+    * use the entire population in each group selected
+
+### Multistage sample
+
+  * split the population into groups
+  * randomly pick some of the groups
+    * take a random sample from each group
+  
+
+## Principles of experimental design
+
+  * Control: compare treatment of interest to a control group
+  * Randomize: randomly assign subjects to treatments
+  * Replicate: collect a sufficiently large sample within a study, or replicate the entire study
+  * Block: account for the potential effect of confounding variables
+    * Group subkects into blocks based on these variables
+    * Randomise within each block to treatment groups

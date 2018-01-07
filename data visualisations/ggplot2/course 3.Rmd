@@ -1,0 +1,64 @@
+---
+title: "Data Viz - Course 3"
+output: html_notebook
+---
+
+```{r}
+# Load in the viridis package
+# install.packages("viridis")
+library(viridis)
+library(ggplot2)
+
+# Might need some hacking of data to get into same form... but this looks ace
+# > str(faithful)
+# 'data.frame':	272 obs. of  2 variables:
+#  $ eruptions: num  3.6 1.8 3.33 2.28 4.53 ...
+# $ waiting  : num  79 54 74 62 85 55 88 85 51 85 ...
+
+# Add viridis color scale
+ggplot(faithful, aes(x = waiting, y = eruptions)) +
+  scale_y_continuous(limits = c(1, 5.5), expand = c(0,0)) +
+  scale_x_continuous(limits = c(40, 100), expand = c(0,0)) +
+  coord_fixed(60/4.5) +
+  scale_fill_viridis() +
+  stat_density_2d(geom = "tile", aes(fill = ..density..), h=c(5,.5), contour = FALSE)
+```
+
+```{r}
+str(faithful)
+```
+```{r}
+# Create linear model: res
+res <- lm(Volume ~ Girth, data = trees)
+
+# Plot res
+plot(res)
+
+# Import ggfortify and use autoplot()
+#install.packages("ggfortify")
+library(ggfortify)
+autoplot(res, ncol = 2)
+```
+
+```{r}
+#install.packages("gapminder")
+install.packages("gganimate")
+library(gapminder)
+library(ggplot2)
+
+p <- ggplot(gapminder,
+            aes(x = gdpPercap,
+                y = lifeExp,
+                size = pop,
+                col = continent,
+                frame = year)) +
+  geom_point(alpha = 0.6)
+p
+```
+
+```{r}
+str(gapminder)
+```
+
+
+

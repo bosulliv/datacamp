@@ -1,0 +1,84 @@
+---
+title: "Correlation and Regression"
+output: html_notebook
+---
+
+# Correlation and Regression
+
+When comparing two continious variables, a scatterplot is out weapon of choice:
+
+  * x = exploratry variable
+  * y = response variable
+
+We can use cut() to chop a numeric variable into discrete chunks
+
+  * x = cut(tailL, breaks = 5)
+
+i.e. chop into 5 linearly equal chunks
+
+
+### Characterising bivariate relationships
+
+  * form (linear, quadratic, non-linear)
+  * direction (positive or negative for linear)
+  * stength (how much scatter/noise)
+  * outliers (can we explain them?)
+
+
+### Correlation
+
+  * -1 < cor(x,y) < 1
+
+Pearson product-moment correlation
+
+### Anscombe
+
+Synthetic dataset to explore correlation.
+4 very different data sets with the same number of members, the same cor, sd, mean and median.
+
+### Best Fit Lines
+
+  * geom_smooth(method "lm", se = FALSE)
+  * lm = least squares linea model best git line
+  * se = don't add the standard error 'fan'
+
+### Understanding linear model
+
+  * response = f(explanatory) + noise
+
+Or for the general linear model:
+
+  * response = intercept + (slope * explanatory) + noise
+  
+  noise = mean 0, sd = <some value>
+  
+  
+### Heredity
+
+Galton's, regression to the mean.
+
+e.g. very tall people have tall children, but not as tall as the father - i.e. it regresses to the mean at the edges of the normal curve.
+
+### Sum of Squared Erros (residials)
+
+RMSE = root mean square error = sqrt(SSE/n-2)
+
+n-2 = number of degrees of freedome
+
+### 
+
+R^2 = 1 - sse/sst
+
+sst = rmse for model = 1 ~ x, insted of y ~ x (check!)
+
+
+Influence = leverage * residial 
+
+which makes logical sense - if we are far from the mean (leverage), and a long way from the fit line - we will move the fit line a lot = infuence
+
+augment() = provides .hat (leverage) and .cooksd (influence)
+
+
+
+
+

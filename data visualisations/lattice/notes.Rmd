@@ -1,0 +1,31 @@
+---
+title: "Lattice Plotting"
+output: html_notebook
+---
+
+```{r}
+library(lattice)
+str(EuStockMarkets)
+
+# Use 'EuStockMarkets' time series data
+str(EuStockMarkets)
+```
+
+```{r}
+# Create time series plot
+xyplot(EuStockMarkets, 
+       # Plot all series together
+       superpose = TRUE,
+       # Split up the time axis into parts
+       cut = list(number = 3, overlap = 0.25))
+```
+
+
+
+
+
+
+
+
+
+
