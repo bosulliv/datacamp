@@ -84,16 +84,16 @@ plot.xts(gdp_xts)
 
 ```{r eval=FALSE}
 # Get a summary of your GDP data
-summary(gdp)
+#summary(gdp)
 
 # Convert GDP date column to time object
-gdp$date <- as.yearqtr(gdp$date)
+#gdp$date <- as.yearqtr(gdp$date)
 
 # Convert GDP data to xts
-gdp_xts <- as.xts(gdp[, -1], order.by = gdp$date)
+#gdp_xts <- as.xts(gdp[, -1], order.by = gdp$date)
 
 # Plot GDP data over time
-plot.xts(gdp_xts)
+#plot.xts(gdp_xts)
 
 ```
 
@@ -297,8 +297,59 @@ plot.xts(unemployment$us_yearlydiff, type = "h")
 
 ```
 
+```{r}
+# data prep
+gdp <- gdp_approx
+colnames(gdp) <- c("gdp")
 
+# Add a quarterly difference in gdp
+gdp$quarterly_diff <- diff.xts(gdp$gdp, lag = 1, differences = 1)
 
+# Split gdp$quarterly_diff into years
+gdpchange_years <- split(gdp$quarterly_diff, f = "years")
+
+# Use lapply to calculate the cumsum each year
+gdpchange_ytd <- lapply(gdpchange_years, FUN = cumsum)
+
+# Use do.call to rbind the results
+gdpchange_xts <- do.call(rbind, gdpchange_ytd)
+
+# Plot cumulative year-to-date change in GDP
+plot.xts(gdpchange_xts, type = "h")
+
+```
+
+```{r}
+# data prep
+lty = c(2,1)
+lwd = c(1,2)
+
+# Use rollapply to calculate the rolling yearly average US unemployment
+unemployment$year_avg <- rollapply(unemployment$us, width = 12, FUN = mean)
+
+# Plot all columns of US unemployment data
+plot.zoo(unemployment[, c("us", "year_avg")], plot.type = "single", lty = lty, lwd = lwd)
+
+```
+
+```{r}
+# Add a one-year lag of MA unemployment
+unemployment$ma_yearlag <-  lag.xts(unemployment$ma, k = 12)
+
+# Add a six-month difference of MA unemployment
+unemployment$ma_sixmonthdiff <- diff.xts(unemployment$ma, lag = 6, difference = 1)
+
+# Add a six-month rolling average of MA unemployment
+unemployment$ma_sixmonthavg <- rollapply(unemployment$ma, width = 6, FUN = mean)
+  
+# Add a yearly rolling maximum of MA unemployment
+unemployment$ma_yearmax <- rollapply(unemployment$ma, width = 12, FUN = max)
+
+# View the last year of unemployment data
+tail(unemployment, n = 12)
+unemployment["2015"]
+
+```
 
 
 
