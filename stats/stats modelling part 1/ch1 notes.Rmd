@@ -1,0 +1,63 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 1 
+
+```{r}
+# data prep
+.expression <- expression((100 - 5 * (1 - relig_motivation) * (school == "private")) * 1.15^acad_motivation)
+
+test_scores <- function(school = "private", acad_motivation = 0, relig_motivation = 0) {
+    eval(.expression)
+}
+
+class(.expression)
+str(.expression)
+```
+
+```{r}
+test_scores('private', 1, 1)
+```
+
+```{r}
+# Baseline run
+test_scores(school = "public", acad_motivation = 0, relig_motivation = 0)
+
+# Change school input, leaving others at baseline
+test_scores(school = "private", acad_motivation = 0, relig_motivation = 0)
+
+# Change acad_motivation input, leaving others at baseline
+test_scores(school = "public", acad_motivation = 1, relig_motivation = 0)
+
+# Change relig_motivation input, leaving others at baseline
+test_scores(school = "public", acad_motivation = 0, relig_motivation = 1)
+
+# Use results above to estimate output for new inputs
+my_prediction <- 100 - 5 + (2 * 15) + (2 * 0)
+my_prediction
+
+# Check prediction by using test_scores() directly
+test_scores("private", 2, 2)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
