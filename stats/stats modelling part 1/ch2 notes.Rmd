@@ -1,0 +1,129 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 2 
+
+```{r}
+# data prep
+data("Runners", package = "statisticalModeling")
+
+# Find the variable names in Runners 
+names(Runners)
+
+# Build models: handicap_model_1, handicap_model_2, handicap_model_3 
+handicap_model_1 <- lm(net ~ age, data = Runners)
+handicap_model_2 <- lm(net ~ sex, data = Runners)
+handicap_model_3 <- lm(net ~ age + sex, data = Runners)
+
+# For now, here's a way to visualize the models
+statisticalModeling::fmodel(handicap_model_1)
+statisticalModeling::fmodel(handicap_model_2)
+statisticalModeling::fmodel(handicap_model_3)
+```
+
+```{r}
+library(statisticalModeling)
+# Load rpart
+library(rpart)
+
+# Build rpart model: model_2
+model_2 <- rpart(net ~ age + sex, data = Runners, cp = 0.002)
+
+# Examine graph of model_2 (don't change)
+statisticalModeling::fmodel(model_2, ~ age + sex)
+```
+
+```{r}
+# data prep
+Ran_twice <- Runners[(Runners$previous %in% c(1,2)), ]
+Ran_twice$runs_again[(Ran_twice$previous == 2)] <- TRUE
+
+# Create run_again_model
+run_again_model <- rpart(runs_again ~ age + sex + net, data = Ran_twice, cp = 0.008)
+
+# Visualize the model (don't change)
+fmodel(run_again_model, ~ age + net, data = Ran_twice)
+
+# In this set, they always run! So my answer is correct - but different to the exercise.
+# He's changed the data in the exercise
+#> sum(Runners$previous == 2)
+#[1] 5977
+#> sum(Runners$previous == 1)
+#[1] 5977
+#> sum(Runners$previous == 0)
+#[1] 5977
+#> sum(Runners$previous == 3)
+#[1] 3023
+#> sum(Runners$previous == 4)
+#[1] 1639
+```
+
+```{r}
+# Display the variable names in the AARP data frame
+names(AARP)
+
+# Build a model: insurance_cost_model
+insurance_cost_model <- lm(Cost ~ Age + Sex + Coverage, data = AARP)
+
+# Construct a data frame: example_vals 
+example_vals <- data.frame(Age = 60, Sex = "F", Coverage = 200)
+
+# Predict insurance cost using predict()
+predict(insurance_cost_model, example_vals)
+
+# Load statisticalModeling
+library(statisticalModeling)
+
+# Calculate model output using evaluate_model()
+evaluate_model(insurance_cost_model, data = example_vals)
+```
+
+```{r}
+# Build a model: insurance_cost_model
+insurance_cost_model <- lm(Cost ~ Age + Sex + Coverage, data = AARP)
+
+# Create a data frame: new_inputs_1
+new_inputs_1 <- data.frame(Age = c(30, 90), Sex = c("F", "M"), 
+                           Coverage = c(0, 100))
+
+# Use expand.grid(): new_inputs_2
+new_inputs_2 <- expand.grid(Age = c(30, 90), Sex = c("F", "M"), 
+                           Coverage = c(0, 100))
+
+# Use predict() for new_inputs_1 and new_inputs_2
+predict(insurance_cost_model, newdata = new_inputs_1)
+predict(insurance_cost_model, newdata = new_inputs_2)
+
+# Use evaluate_model() for new_inputs_1 and new_inputs_2
+evaluate_model(insurance_cost_model, data = new_inputs_1)
+evaluate_model(insurance_cost_model, data = new_inputs_2)
+```
+
+```{r}
+# Evaluate insurance_cost_model
+evaluate_model(insurance_cost_model)
+
+# Use fmodel() to reproduce the graphic
+fmodel(insurance_cost_model, ~ Coverage + Age + Sex)
+
+# A new formula to highlight difference in sexes
+new_formula <- ~ Age + Sex + Coverage
+
+# Make the new plot (don't change)
+fmodel(insurance_cost_model, new_formula)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

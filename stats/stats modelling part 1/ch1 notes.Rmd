@@ -42,22 +42,53 @@ my_prediction
 test_scores("private", 2, 2)
 ```
 
+```{r}
+#install.packages("mosaic")
+library(mosaic)
+```
 
+```{r}
+# doesn't work - removed from CRAN
+# install.packages("statisticalModeling")
 
+# This works though - using archived version
+# install.packages("https://cran.r-project.org/src/contrib/Archive/statisticalModeling/statisticalModeling_0.3.0.tar.gz", repos=NULL, method="libcurl")
 
+# Use data() to load Trucking_jobs
+data("Trucking_jobs", package = "statisticalModeling")
 
+# View the number rows in Trucking_jobs
+nrow(Trucking_jobs)
 
+# Use names() to find variable names in mosaicData::Riders
+names(mosaicData::Riders)
 
+# Load ggplot2 package
+library(ggplot2)
 
+# Look at the head() of diamonds
+head(diamonds)
+```
 
+```{r}
+data("AARP", package = "statisticalModeling")
 
+# Find the variable names in AARP
+names(AARP)
 
+# Find the mean cost broken down by sex
+mosaic::mean(Cost ~ Sex, data = AARP)
+```
 
+```{r}
+# Create a boxplot using base, lattice, or ggplot2
+boxplot(Cost ~ Sex, data = AARP)
+bwplot(Cost ~ Sex, data = AARP)
+gf_boxplot(Cost ~ Sex, data = AARP)
 
-
-
-
-
-
-
+# Make a scatterplot using base, lattice, or ggplot2
+plot(Cost ~ Age, data = AARP)
+xyplot(Cost ~ Age, data = AARP)
+gf_point(Cost ~ Age, data = AARP)
+```
 
