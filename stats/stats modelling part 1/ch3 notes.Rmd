@@ -1,0 +1,121 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 3
+
+```{r}
+# data prep
+r_no_na <- Runners[!is.na(Runners$net), ]
+Runners_100 = r_no_na[1:100,]
+
+# Build a model of net running time
+base_model <- lm(net ~ age + sex, data = Runners_100)
+
+# Evaluate base_model on the training data
+base_model_output <- predict(base_model, newdata = Runners_100)
+
+# Build the augmented model
+aug_model <- lm(net ~ age + sex + previous, data = Runners_100)
+
+# Evaluate aug_model on the training data
+aug_model_output <- predict(aug_model, newdata = Runners_100)
+
+# How much do the model outputs differ?
+mean((base_model_output - aug_model_output) ^ 2, na.rm = TRUE)
+```
+
+```{r}
+# Build and evaluate the base model on Runners_100
+base_model <- lm(net ~ age + sex, data = Runners_100)
+base_model_output <- predict(base_model, newdata = Runners_100)
+
+# Build and evaluate the augmented model on Runners_100
+aug_model <- lm(net ~ age + sex + previous, data = Runners_100)
+aug_model_output <- predict(aug_model, newdata = Runners_100)
+
+# Find the case-by-case differences
+base_model_differences <- with(Runners_100, net - base_model_output)
+aug_model_differences <- with(Runners_100, net - aug_model_output)
+
+# Calculate mean square errors
+mean(base_model_differences ^ 2, na.rm = TRUE)
+mean(aug_model_differences ^ 2, na.rm = TRUE)
+```
+
+```{r}
+# Add bogus column to CPS85 (don't change)
+# rnorm varies between -1 and 1 ~ 50/50
+CPS85$bogus <- rnorm(nrow(CPS85)) > 0
+
+# Make the base model
+base_model <- lm(wage ~ educ + sector + sex, data = CPS85)
+
+# Make the bogus augmented model
+aug_model <- lm(wage ~ educ + sector + sex + bogus, data = CPS85)
+
+# Find the MSE of the base model
+mean((CPS85$wage - predict(base_model, newdata = CPS85)) ^ 2)
+
+# Find the MSE of the augmented model
+mean((CPS85$wage - predict(aug_model, newdata = CPS85)) ^ 2)
+```
+
+```{r}
+# Generate a random TRUE or FALSE for each case in Runners_100
+Runners_100$training_cases <- rnorm(nrow(Runners_100)) > 0
+
+# Build base model net ~ age + sex with training cases
+base_model <- lm(net ~ age + sex, data = subset(Runners_100, training_cases))
+
+# Evaluate the model for the testing cases
+Preds <- evaluate_model(base_model, data = subset(Runners_100, !training_cases))
+
+# Calculate the MSE on the testing data
+with(data = Preds, mean((model_output - net)^2))
+
+# [1] 218.2651
+# Notice the smaller set gives worse errors, which you can expect.
+# But it does help avoid over fitting
+```
+
+```{r}
+# The model on all the data
+model <- lm(net ~ age + sex, data = Runners_100)
+
+# Find the in-sample error (using the training data)
+in_sample <- evaluate_model(model, data = Runners_100)
+in_sample_error <- 
+  with(in_sample, mean((net - model_output)^2, na.rm = TRUE))
+
+# Calculate MSE for many different trials
+# this is the cross validation prediction errors
+# i.e chop our data into different shape train and test sets
+trials <- cv_pred_error(model)
+
+# View the cross-validated prediction errors
+trials
+
+# Find confidence interval on trials and compare to training_error
+mosaic::t.test(~ mse, mu = in_sample_error, data = trials)
+```
+
+The question was - is the in_sample_error below, inside, or above the 95% confidence inter
+
+```{r}
+# The base model
+base_model <- lm(net ~ age + sex, data = Runners_100)
+
+# An augmented model adding previous as an explanatory variable
+aug_model <- lm(net ~ age + sex + previous, data = Runners_100)
+
+# Run cross validation trials on the two models
+trials <- cv_pred_error(base_model, aug_model)
+
+# Compare the two sets of cross-validated errors
+t.test(mse ~ model, data = trials)
+```
+
+
+
