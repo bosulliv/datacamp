@@ -1,0 +1,63 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 1
+
+```{r}
+rm(list = ls())
+```
+
+
+```{r}
+library(class)
+
+# load course data
+all_signs <- read_csv("https://assets.datacamp.com/production/course_2906/datasets/knn_traffic_signs.csv")
+signs     <- all_signs[-c(205, 206), -c(1,2)]
+next_sign <- all_signs[ c(205, 206), -c(1,2,3)]
+```
+
+```{r}
+# Load the 'class' package
+library(class)
+
+# Create a vector of labels
+sign_types <- signs$sign_type
+
+# Classify the next sign observed
+knn(train = signs[,-1], test = next_sign, cl = sign_types)
+```
+
+```{r}
+# Examine the structure of the signs dataset
+str(signs)
+
+# Count the number of signs of each type
+table(signs$sign_type)
+
+# Check r10's average red level by sign type
+aggregate(r10 ~ sign_type, data = signs, mean)
+
+# dplyr alternative - not as nice!
+signs %>% 
+  select(sign_type, r10) %>% 
+  group_by(sign_type) %>% 
+  summarise(n = mean(r10)) %>% 
+  ungroup()
+```
+
+```{r}
+# Use kNN to identify the test road signs
+sign_types <- signs$sign_type
+signs_pred <- knn(train = ___[-1], test = ___[-1], cl = ___)
+
+# Create a confusion matrix of the actual versus predicted values
+signs_actual <- ___
+table(___, ___)
+
+# Compute the accuracy
+mean(___ == ___)
+```
+
