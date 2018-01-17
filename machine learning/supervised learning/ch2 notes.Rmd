@@ -1,0 +1,76 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 2 - Bayesian methods
+
+```{r}
+# data prep
+rm(list = ls())
+#install.packages("naivebayes")
+library(naivebayes)
+library(tidyverse)
+
+locations <- read_csv("https://assets.datacamp.com/production/course_2906/datasets/locations.csv")
+
+where9am <- locations %>% filter(hour == 9) %>% select(daytype, location)
+```
+
+
+```{r}
+# Compute P(A)  P(office)
+p_A <- nrow(subset(where9am, location == "office"))/nrow(where9am)
+p_A
+
+# Compute P(B) P(weekday)
+p_B <- nrow(subset(where9am, daytype == "weekday"))/nrow(where9am)
+p_B
+
+# Compute the observed P(A and B) P(office and weekday)
+p_AB <- nrow(subset(where9am,
+                    daytype == "weekday" &
+                      location == "office"))/nrow(where9am)
+p_AB
+
+# Compute P(A | B)
+p_A_given_B <- p_AB/p_B
+p_A_given_B
+```
+
+```{r}
+# data prep
+daytype <- factor(c("weekday", "weekend"))
+thursday9am <- data.frame(daytype = daytype[1])
+saturday9am <- data.frame(daytype = daytype[2])
+```
+
+
+```{r}
+# Load the naivebayes package
+library(naivebayes)
+
+# Build the location prediction model
+locmodel <- naive_bayes(location ~ daytype, data = where9am)
+
+# Predict Thursday's 9am location
+predict(locmodel, thursday9am)
+
+# Predict Saturdays's 9am location
+predict(locmodel, saturday9am)
+```
+
+```{r}
+# The 'naivebayes' package is loaded into the workspace
+# and the Naive Bayes 'locmodel' has been built
+
+# Examine the location prediction model
+locmodel
+
+# Obtain the predicted probabilities for Thursday at 9am
+predict(locmodel, thursday9am , type = "prob")
+
+# Obtain the predicted probabilities for Saturday at 9am
+predict(locmodel, saturday9am , type = "prob")
+```
+

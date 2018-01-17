@@ -15,9 +15,18 @@ library(class)
 
 # load course data
 all_signs <- read_csv("https://assets.datacamp.com/production/course_2906/datasets/knn_traffic_signs.csv")
-signs     <- all_signs[-c(205, 206), -c(1,2)]
-next_sign <- all_signs[ c(205, 206), -c(1,2,3)]
+
+signs      <- all_signs %>% filter(sample == "train")
+signs      <- signs[,-c(1,2)]
+
+next_sign  <- all_signs %>% filter(sample == "example")
+next_sign  <- next_sign[,-c(1,2,3)]
+
+test_signs <- all_signs %>% filter(sample == "test")
+test_signs <- test_signs[,-c(1,2)]
 ```
+
+Notice that we remove the classification column from the training set, and provide that as a matching vector for the cl variable - which is a factor of true classifications for the training set. We then apply the model to our test set, and product a result of predict classification.
 
 ```{r}
 # Load the 'class' package
@@ -27,7 +36,7 @@ library(class)
 sign_types <- signs$sign_type
 
 # Classify the next sign observed
-knn(train = signs[,-1], test = next_sign, cl = sign_types)
+knn(train = signs[, -1], test = next_sign, cl = sign_types)
 ```
 
 ```{r}
@@ -48,16 +57,76 @@ signs %>%
   ungroup()
 ```
 
+
+```{r}
+# data prep
+# split signs into random 146 train, 59 test
+#
+# test_idx <- sample(seq(1:nrow(all_signs)), 59)
+# signs <- all_signs[-test_idx, -c(1,2)]
+# test_signs <- all_signs[test_idx, -c(1,2)]
+#
+# nice sampling - just use the sample column!
+```
+
+
 ```{r}
 # Use kNN to identify the test road signs
 sign_types <- signs$sign_type
-signs_pred <- knn(train = ___[-1], test = ___[-1], cl = ___)
+
+signs_pred <- knn(train = signs[,-1], test = test_signs[,-1], cl = sign_types)
 
 # Create a confusion matrix of the actual versus predicted values
-signs_actual <- ___
-table(___, ___)
+signs_actual <- test_signs$sign_type
+table(signs_pred, signs_actual)
 
 # Compute the accuracy
-mean(___ == ___)
+mean(signs_pred == signs_actual)
 ```
+
+```{r}
+# data prep
+signs_test <- test_signs
+
+# Compute the accuracy of the baseline model (default k = 1)
+k_1 <- knn(train = signs[,-1],
+           test = test_signs[,-1], 
+           cl = sign_types,
+           k = 1)
+mean(k_1 == signs_actual)
+
+# Modify the above to set k = 7
+k_7 <-  knn(train = signs[,-1],
+            test = signs_test[,-1],
+            cl = sign_types,
+            k = 7)
+mean(k_7 == signs_actual)
+
+# Set k = 15 and compare to the above
+k_15 <- knn(train = signs[,-1],
+            test = signs_test[,-1], 
+            cl = sign_types, 
+            k = 15)
+mean(k_15 == signs_actual)
+```
+
+```{r}
+# Use the prob parameter to get the proportion of votes for the winning class
+sign_pred <- knn(train = signs[,-1],
+                 test = signs_test[,-1],
+                 cl = sign_types,
+                 k = 7,
+                 prob = TRUE)
+
+# Get the "prob" attribute from the predicted classes
+sign_prob <- attr(sign_pred, "prob")
+
+# Examine the first several predictions
+head(sign_prob)
+
+# Examine the proportion of votes for the winning class
+head(sign_pred)
+```
+
+
 
