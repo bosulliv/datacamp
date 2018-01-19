@@ -1,0 +1,114 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 2
+
+```{r}
+# unemployment is in the workspace
+summary(unemployment)
+
+# unemployment_model is in the workspace
+summary(unemployment_model)
+
+# Make predictions from the model
+unemployment$predictions <- predict(unemployment_model)
+
+# Fill in the blanks to plot predictions (on x-axis) versus the female_unemployment rates
+ggplot(unemployment, aes(x = predictions, y = female_unemployment)) + 
+  geom_point() + 
+  geom_abline()
+
+# Calculate residuals
+unemployment$residuals <- residuals(unemployment_model)
+
+# Fill in the blanks to plot predictions (on x-axis) versus the residuals
+ggplot(unemployment, aes(x = predictions, y = residuals)) + 
+  geom_pointrange(aes(ymin = 0, ymax = residuals)) + 
+  geom_hline(yintercept = 0, linetype = 3) + 
+  ggtitle("residuals vs. linear model prediction")
+```
+
+```{r}
+# unemployment is in the workspace (with predictions)
+summary(unemployment)
+
+# unemployment_model is in the workspace
+summary(unemployment_model)
+
+# Load the package WVPlots
+#install.packages("WVPlots")
+library(WVPlots)
+
+# Plot the Gain Curve
+GainCurvePlot(unemployment, "predictions"
+              , "female_unemployment",  "Unemployment model")
+```
+
+```{r}
+# unemployment is in the workspace
+summary(unemployment)
+
+# For convenience put the residuals in the variable res
+res <- unemployment$residuals
+
+# Calculate RMSE, assign it to the variable rmse and print it
+(rmse <- sqrt(mean(res^2)))
+
+# Calculate the standard deviation of female_unemployment and print it
+(sd_unemployment <- sd(unemployment$female_unemployment))
+```
+
+```{r}
+# unemployment is in your workspace
+summary(unemployment)
+
+# unemployment_model is in the workspace
+summary(unemployment_model)
+
+# Calculate mean female_unemployment: fe_mean. Print it
+(fe_mean <- mean(unemployment$female_unemployment))
+
+# Calculate total sum of squares: tss. Print it
+(tss <- sum((fe_mean - unemployment$female_unemployment)^2))
+
+# Calculate residual sum of squares: rss. Print it
+(rss <- sum(unemployment$residuals^2))
+
+# Calculate R-squared: rsq. Print it. Is it a good fit?
+(rsq <- 1 - rss/tss)
+
+# Get R-squared from glance. Print it
+(rsq_glance <- glance(unemployment_model)$r.squared)
+
+# So if our model has a great fit, the resisuals are small
+# which makes R^2 close to 1.
+# but it if the residuals are large, and in the worst case
+# identical to our variance - then R^2 is close to zero
+```
+
+The linear correlation of two variables, xx and yy, measures the strength of the linear relationship between them. When xx and yy are respectively:
+
+   * the outcomes of a regression model that minimizes squared-error (like linear regression) and
+   * the true outcomes of the training data,
+
+then the square of the correlation is the same as R2R2. You will verify that in this exercise.
+
+```{r}
+# unemployment is in your workspace
+summary(unemployment)
+
+# unemployment_model is in the workspace
+summary(unemployment_model)
+
+# Get the correlation between the prediction and true outcome: rho and print it
+(rho <- cor(unemployment$female_unemployment, unemployment$predictions))
+
+# Square rho: rho2 and print it
+(rho2 <- rho^2)
+
+# Get R-squared from glance and print it
+(rsq_glance <- glance(unemployment_model)$r.squared)
+```
+

@@ -1,0 +1,127 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 1 
+
+```{r}
+library(tidyverse)
+library(broom)
+#install.packages("sigr")
+library(sigr)
+
+# data prep
+rm(list = ls())
+
+#> cat(unemployment$male_unemployment, sep=', ')
+male_unemployment <- c(2.9, 6.7, 4.9, 7.9, 9.8, 6.9, 6.1, 6.2, 6, 5.1, 4.7, 4.4, 5.8)
+
+# > cat(unemployment$female_unemployment, sep=', ')
+female_unemployment <- c(4, 7.4, 5, 7.2, 7.9, 6.1, 6, 5.8, 5.2, 4.2, 4, 4.4, 5.2)
+
+unemployment <- data.frame(male_unemployment = male_unemployment,
+                          female_unemployment = female_unemployment )
+```
+
+
+```{r}
+# unemployment is loaded in the workspace
+summary(unemployment)
+
+# Define a formula to express female_unemployment as a function of male_unemployment
+fmla <- as.formula(female_unemployment ~ male_unemployment)
+
+# Print it
+fmla
+
+# Use the formula to fit a model: unemployment_model
+unemployment_model <- lm(fmla, data = unemployment)
+
+# Print it
+unemployment_model
+
+# Print it
+unemployment_model
+```
+
+```{r}
+# broom and sigr are already loaded in your workspace
+# Print unemployment_model
+unemployment_model
+
+# Call summary() on unemployment_model to get more details
+summary(unemployment_model)
+
+# Call glance() on unemployment_model to see the details in a tidier form
+glance(unemployment_model)
+
+# Call wrapFTest() on unemployment_model to see the most relevant details
+wrapFTest(unemployment_model)
+
+```
+
+```{r}
+# data prep
+newrates <- data.frame(male_unemployment = 5)
+
+# unemployment is in your workspace
+summary(unemployment)
+
+# newrates is in your workspace
+newrates
+
+# Predict female unemployment in the unemployment data set
+unemployment$prediction <- predict(unemployment_model)
+
+# load the ggplot2 package
+library(ggplot2)
+
+# Make a plot to compare predictions to actual (prediction on x axis). 
+ggplot(unemployment, aes(x = prediction, y = female_unemployment)) + 
+  geom_point() +
+  geom_abline(color = "blue")
+
+# Predict female unemployment rate when male unemployment is 5%
+pred <- predict(unemployment_model, newdata = newrates)
+# Print it
+pred
+```
+
+```{r}
+# data prep
+bloodpressure <- readRDS(gzcon(url("https://assets.datacamp.com/production/course_3851/datasets/bloodpressure.rds")))
+```
+
+```{r}
+# bloodpressure is in the workspace
+summary(bloodpressure)
+
+# Create the formula and print it
+fmla <- as.formula(blood_pressure ~ age + weight)
+fmla
+
+# Fit the model: bloodpressure_model
+bloodpressure_model <- lm(fmla, data = bloodpressure)
+
+# Print bloodpressure_model and call summary() 
+bloodpressure_model
+summary(bloodpressure_model)
+```
+
+```{r}
+# bloodpressure is in your workspace
+summary(bloodpressure)
+
+# bloodpressure_model is in your workspace
+bloodpressure_model
+
+# predict blood pressure using bloodpressure_model :prediction
+bloodpressure$prediction <- predict(bloodpressure_model)
+
+# plot the results
+ggplot(bloodpressure, aes(x = prediction, y = blood_pressure)) + 
+    geom_point() +
+    geom_abline(color = "blue")
+```
+
