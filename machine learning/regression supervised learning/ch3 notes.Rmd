@@ -1,0 +1,363 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 3
+
+```{r}
+# data prep
+#> cat(flowers$Flowers, sep=', ')
+Flowers <- c(62.3, 77.4, 55.3, 54.2, 49.6, 61.9, 39.4, 45.7, 31.3, 44.9, 36.8, 41.9, 77.8, 75.6, 69.1, 78, 57, 71.1, 62.9, 52.2, 60.3, 45.6, 52.6, 44.4)
+
+#> cat(flowers$Time, sep='", "')
+Time <- c("Late", "Late", "Late", "Late", "Late", "Late", "Late", "Late", "Late", "Late", "Late", "Late", "Early", "Early", "Early", "Early", "Early", "Early", "Early", "Early", "Early", "Early", "Early", "Early")
+
+# > cat(flowers$Intensity, sep=', ')
+Intensity <- c(150, 150, 300, 300, 450, 450, 600, 600, 750, 750, 900, 900, 150, 150, 300, 300, 450, 450, 600, 600, 750, 750, 900, 900)
+
+flowers <- data.frame(Flowers = Flowers,
+                      Time = Time,
+                      Intensity = Intensity,
+                      stringsAsFactors = F)
+```
+
+
+```{r}
+# Call str on flowers to see the types of each column
+str(flowers)
+
+# Use unique() to see how many possible values Time takes
+unique(flowers$Time)
+
+# Build a formula to express Flowers as a function of Intensity and Time: fmla. Print it
+(fmla <- as.formula("Flowers ~ Intensity + Time"))
+
+# Use fmla and model.matrix to see how the data is represented for modeling
+mmat <- model.matrix(fmla, data = flowers)
+
+# Examine the first 20 lines of flowers
+head(flowers, 20)
+
+# Examine the first 20 lines of mmat
+head(mmat, 20)
+```
+
+```{r}
+# flowers in is the workspace
+str(flowers)
+
+# fmla is in the workspace
+fmla
+
+# Fit a model to predict Flowers from Intensity and Time : flower_model
+flower_model <- lm(fmla, data = flowers)
+
+# Use summary on mmat to remind yourself of its structure
+summary(mmat)
+
+# Use summary to examine flower_model 
+summary(flower_model)
+
+# Predict the number of flowers on each plant
+flowers$predictions <- predict(flower_model)
+
+# Plot predictions vs actual flowers (predictions on x-axis)
+ggplot(flowers, aes(x = predictions, y = Flowers)) + 
+  geom_point() +
+  geom_abline(color = "blue") 
+```
+
+```{r}
+# data prep
+#> colnames(alcohol)
+#[1] "Subject" "Metabol" "Gastric" "Sex"     "Alcohol"
+Subject <- 1:32
+
+#> cat(alcohol$Metabol,sep=',')
+Metabol <- c(0.6,0.6,1.5,0.4,0.1,0.2,0.3,0.3,0.4,1,1.1,1.2,1.3,1.6,1.8,2,2.5,2.9,1.5,1.9,2.7,3,3.7,0.3,2.5,2.7,3,4,4.5,6.1,9.5,12.3)
+
+#> cat(alcohol$Gastric,sep=',')
+Gastric <- c(1,1.6,1.5,2.2,1.1,1.2,0.9,0.8,1.5,0.9,1.6,1.7,1.7,2.2,0.8,2,3,2.2,1.3,1.2,1.4,1.3,2.7,1.1,2.3,2.7,1.4,2.2,2,2.8,5.2,4.1)
+
+#> cat(alcohol$Sex,sep=',')
+Sex <- factor(c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2),
+              labels = c("Male", "Female"))
+
+#> cat(alcohol$Alcohol,sep=',')
+Alcohol <- factor(c(1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,2,2,2,2,2,2,2,2,2),
+                  labels = c("Alcoholic", "Non-alcoholic"))
+
+alcohol <- data.frame(Subject = Subject,
+                      Metabol = Metabol,
+                      Gastric = Gastric,
+                      Sex = Sex,
+                      Alcohol = Alcohol)
+```
+
+
+
+```{r}
+# alcohol is in the workspace
+summary(alcohol)
+
+# Create the formula with main effects only
+(fmla_add <- as.formula(Metabol ~ Gastric + Sex) )
+
+# Create the formula with interactions
+(fmla_interaction <- as.formula(Metabol ~ Gastric + Gastric:Sex) )
+
+# Fit the main effects only model
+model_add <- lm(fmla_add, data = alcohol)
+
+# Fit the interaction model
+model_interaction <- lm(fmla_interaction, data = alcohol)
+
+# Call summary on both models and compare
+summary(model_add)
+summary(model_interaction)
+```
+
+
+```{r}
+# alcohol is in the workspace
+summary(alcohol)
+
+# Both the formulae are in the workspace
+fmla_add
+fmla_interaction
+
+# Create the splitting plan for 3-fold cross validation
+set.seed(34245)  # set the seed for reproducibility
+splitPlan <-  kWayCrossValidation(nrow(alcohol), 3, dframe = NULL, y = NULL)
+
+# Sample code: Get cross-val predictions for main-effects only model
+alcohol$pred_add <- 0  # initialize the prediction vector
+for(i in 1:3) {
+  split <- splitPlan[[i]]
+  model_add <- lm(fmla_add, data = alcohol[split$train, ])
+  alcohol$pred_add[split$app] <- predict(model_add, newdata = alcohol[split$app, ])
+}
+
+# Get the cross-val predictions for the model with interactions
+alcohol$pred_interaction <- 0 # initialize the prediction vector
+for(i in 1:3) {
+  split <- splitPlan[[i]]
+  model_interaction <- lm(fmla_interaction, data = alcohol[split$train, ])
+  alcohol$pred_interaction[split$app] <- predict(model_interaction, newdata = alcohol[split$app, ])
+}
+
+# Get RMSE
+alcohol %>% 
+  gather(key = modeltype, value = pred, pred_add, pred_interaction) %>%
+  mutate(residuals = Metabol - pred) %>%      
+  group_by(modeltype) %>%
+  summarize(rmse = sqrt(mean(residuals^2)))
+```
+
+
+```{r}
+# prep data
+#> cat(fdata$y,sep=',',fill=T)
+y <- c(
+9.149694,1.902521,-3.859826,2.38897,1.541572,13.56188,10.19879,1.104463,
+3.935479,9.040798,1.727649,15.72384,2.257844,-1.975057,1.100646,18.62829,
+3.678655,3.086317,8.691391,7.908674,5.440159,14.78504,9.022044,3.976656,
+2.667568,7.681544,11.93487,5.308734,13.05872,2.228536,15.40313,-0.8775657,
+7.611194,9.86251,4.362501,3.841833,11.34254,17.12926,16.16503,-5.893499,12.6388,
+6.450032,2.968209,4.076079,5.523592,4.832082,6.723013,1.842134,3.199221,
+10.81617,1026.4,202.3892,833.353,1075.412,96.11981,438.2358,911.3333,542.5643,
+686.3324,494.4656,422.8094,1033.882,161.9941,491.43,575.9199,384.7702,720.0292,
+963.9351,159.7865,765.4002,246.4217,1097.922,1050.401,1069.622,116.81,523.5163,
+457.7431,1060.564,761.9174,969.3237,522.6804,475.8733,368.5448,1101.619,
+1052.923,663.0351,136.6887,331.8121,921.9616,773.5812,458.3326,643.4683,
+738.6477,846.4213,413.6646,180.9942,695.6229,164.898,106.5063,358.3557)
+
+#> cat(fdata$pred,sep=',',fill=T)
+pred <- c(
+6.430583,3.473332,1.594509,3.764175,9.509294,6.931725,8.191798,1.514578,
+8.986364,6.149792,8.498107,10.94122,6.003761,1.071922,4.420715,10.51879,
+5.746765,7.0929,7.837105,4.307022,6.001545,8.309529,8.625899,2.978443,4.040108,
+7.46093,9.082721,6.523833,10.34293,4.240767,8.833006,1.165411,4.743669,8.426791,
+10.19153,4.325049,6.389882,10.99754,7.524615,2.448673,9.514229,5.211945,
+3.973336,6.321008,10.166,3.847532,6.304504,3.647446,2.518993,8.02391,1027.193,
+194.5215,826.2455,1081.439,100.388,430.2916,912.5676,533.9462,691.7932,498.0086,
+423.2028,1032.662,168.5458,492.2394,589.7059,377.149,730.1107,967.6505,159.207,
+767.1856,250.1326,1098.896,1048.867,1057.992,119.2822,524.5648,459.7696,
+1053.649,751.1132,966.3796,520.6141,467.7246,364.2117,1097.072,1054.626,664.366,
+137.4858,326.0875,929.9654,772.1313,456.4266,646.6746,747.0028,842.5292,
+411.8879,175.7709,687.8649,165.812,108.4848,363.8665)
+
+# > cat(fdata$label,sep=',',fill=T)
+label <- factor(c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2), labels = c("small purchases", "large purchases"))
+
+fdata <- data.frame(y = y, pred = pred, label = label)
+```
+
+```{r}
+# fdata is in the workspace
+summary(fdata)
+
+# Examine the data: generate the summaries for the groups large and small:
+fdata %>% 
+    group_by(label) %>%     # group by small/large purchases
+    summarize(min  = min(y),   # min of y
+              mean = mean(y),   # mean of y
+              max  = max(y))   # max of y
+
+# Fill in the blanks to add error columns
+fdata2 <- fdata %>% 
+         group_by(label) %>%       # group by label
+           mutate(residual = pred - y,  # Residual
+                  relerr   = residual/y)  # Relative error
+
+# Compare the rmse and rmse.rel of the large and small groups:
+fdata2 %>% 
+  group_by(label) %>% 
+  summarize(rmse     = sqrt(mean(residual^2)),   # RMSE
+            rmse.rel = sqrt(mean(relerr^2)))     # Root mean squared relative error
+            
+# Plot the predictions for both groups of purchases
+ggplot(fdata2, aes(x = pred, y = y, color = label)) + 
+  geom_point() + 
+  geom_abline() + 
+  facet_wrap(~ label, ncol = 1, scales = "free") + 
+  ggtitle("Outcome vs prediction")
+```
+
+```{r}
+# data prep
+load(gzcon(url("https://assets.datacamp.com/production/course_3851/datasets/Income.RData")))
+income_test <- incometest
+income_train <- incometrain
+```
+
+
+```{r}
+# Examine Income2005 in the training set
+summary(income_train$Income2005)
+
+# Write the formula for log income as a function of the tests and print it
+(fmla.log <- as.formula(log(Income2005) ~ Arith + Word + Parag + Math + AFQT))
+
+# Fit the linear model
+model.log <- lm(fmla.log, data = income_train)
+
+# Make predictions on income_test
+income_test$logpred <- predict(model.log, newdata = income_test)
+summary(income_test$logpred)
+
+# Convert the predictions to monetary units
+income_test$pred.income <- exp(income_test$logpred)
+summary(income_test$pred.income)
+
+#  Plot predicted income (x axis) vs income
+ggplot(income_test, aes(x = pred.income, y = Income2005)) + 
+  geom_point() + 
+  geom_abline(color = "blue")
+```
+
+```{r}
+# data prep
+fmla.abs <- as.formula(Income2005 ~ Arith + Word + Parag + Math + AFQT)
+model.abs <- lm(fmla.abs, data = income_test)
+```
+
+
+```{r}
+# fmla.abs is in the workspace
+fmla.abs
+
+# model.abs is in the workspace
+summary(model.abs)
+
+# Add predictions to the test set
+income_test <- income_test %>%
+  mutate(pred.absmodel = predict(model.abs, income_test),        # predictions from model.abs
+         pred.logmodel = exp(predict(model.log, income_test)))   # predictions from model.log
+
+# Gather the predictions and calculate residuals and relative error
+income_long <- income_test %>% 
+  gather(key = modeltype, value = pred, pred.absmodel, pred.logmodel) %>%
+  mutate(residual = pred - Income2005,   # residuals
+         relerr   = residual/Income2005)   # relative error
+
+# Calculate RMSE and relative RMSE and compare
+income_long %>% 
+  group_by(modeltype) %>%      # group by modeltype
+  summarize(rmse     = sqrt(mean(residual^2)),    # RMSE
+            rmse.rel = sqrt(mean(relerr^2)))    # Root mean squared relative error
+```
+
+
+```{r}
+# data prep
+houseprice <- readRDS(gzcon(url("https://assets.datacamp.com/production/course_3851/datasets/houseprice.rds")))
+```
+
+
+```{r}
+# houseprice is in the workspace
+summary(houseprice)
+
+# Create the formula for price as a function of squared size
+(fmla_sqr <- as.formula(price ~ I(size^2)))
+
+# Fit a model of price as a function of squared size (use fmla_sqr)
+model_sqr <- lm(fmla_sqr, data = houseprice)
+
+# Fit a model of price as a linear function of size
+model_lin <- lm(price ~ size, data = houseprice)
+
+# Make predictions and compare
+houseprice %>% 
+    mutate(pred_lin = predict(model_lin),       # predictions from linear model
+           pred_sqr = predict(model_sqr)) %>%   # predictions from quadratic model 
+    gather(key = modeltype, value = pred, pred_lin, pred_sqr) %>% # gather the predictions
+    ggplot(aes(x = size)) + 
+       geom_point(aes(y = price)) +                   # actual prices
+       geom_line(aes(y = pred, color = modeltype)) + # the predictions
+       scale_color_brewer(palette = "Dark2")
+```
+
+```{r}
+# houseprice is in the workspace
+summary(houseprice)
+
+# fmla_sqr is in the workspace
+fmla_sqr
+
+# Create a splitting plan for 3-fold cross validation
+set.seed(34245)  # set the seed for reproducibility
+splitPlan <- kWayCrossValidation(nrow(houseprice), 3, dframe = NULL, y = NULL)
+
+# Sample code: get cross-val predictions for price ~ size
+houseprice$pred_lin <- 0  # initialize the prediction vector
+for(i in 1:3) {
+  split <- splitPlan[[i]]
+  model_lin <- lm(price ~ size, data = houseprice[split$train,])
+  houseprice$pred_lin[split$app] <- predict(model_lin, newdata = houseprice[split$app,])
+}
+
+# Get cross-val predictions for price as a function of size^2 (use fmla_sqr)
+houseprice$pred_sqr <- 0 # initialize the prediction vector
+for(i in 1:3) {
+  split <- splitPlan[[i]]
+  model_sqr <- lm(fmla_sqr, data = houseprice[split$train, ])
+  houseprice$pred_sqr[split$app] <- predict(model_sqr, newdata = houseprice[split$app, ])
+}
+
+# Gather the predictions and calculate the residuals
+houseprice_long <- houseprice %>%
+  gather(key = modeltype, value = pred, pred_lin, pred_sqr) %>%
+  mutate(residuals = pred - price)
+
+# Compare the cross-validated RMSE for the two models
+houseprice_long %>% 
+  group_by(modeltype) %>% # group by modeltype
+  summarize(rmse = sqrt(mean(residuals^2)))
+```
+
+

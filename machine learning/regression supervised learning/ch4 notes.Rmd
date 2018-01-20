@@ -1,0 +1,36 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 4
+
+```{r}
+# data prep
+sparrow <- readRDS(gzcon(url("https://assets.datacamp.com/production/course_3851/datasets/sparrow.rds")))
+```
+
+
+```{r}
+# sparrow is in the workspace
+summary(sparrow)
+
+# Create the survived column
+sparrow$survived <- ifelse(sparrow$status == "Survived", TRUE, FALSE)
+
+# Create the formula
+(fmla <- as.formula(survived ~ total_length + weight + humerus))
+
+# Fit the logistic regression model
+sparrow_model <- glm(fmla, data = sparrow, family = "binomial")
+
+# Call summary
+summary(sparrow_model)
+
+# Call glance
+(perf <- glance(sparrow_model))
+
+# Calculate pseudo-R-squared
+(pseudoR2 <- glance(sparrow_model) %>% summarise(pR2 = 1 - deviance/null.deviance))
+```
+
