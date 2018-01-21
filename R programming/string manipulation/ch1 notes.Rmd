@@ -175,7 +175,8 @@ my_toppings <- sample(toppings, size = 3)
 my_toppings
 
 # Paste "and " to last element: my_toppings_and
-my_toppings_and <- c(my_toppings[1:2], paste("and", my_toppings[3]))
+#my_toppings_and <- c(my_toppings[1:2], paste("and", my_toppings[3]))
+my_toppings_and <- paste(c("", "", "and "), my_toppings, sep = "")
 
 # Collapse with comma space: these_toppings
 these_toppings <- paste(my_toppings_and, collapse = ", ")
