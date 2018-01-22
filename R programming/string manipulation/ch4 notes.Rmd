@@ -75,9 +75,115 @@ str_match(narratives, pattern = pattern2)
 ```
 
 ```{r}
+old_boy_names <- boy_names
+boy_names <- str_to_lower(boy_names)
 
+# See names with three repeated letters
+repeated_three_times <- capture(WRD) %R% REF1 %R% REF1 
+str_view(boy_names, 
+  pattern = repeated_three_times, 
+  match = TRUE)
+
+# See names with a pair of repeated letters
+pair_of_repeated <- capture(WRD %R% WRD) %R% REF1
+str_view(boy_names, 
+  pattern = pair_of_repeated, 
+  match = TRUE)
+
+# See names with a pair that reverses
+pair_that_reverses <- capture(WRD) %R% capture(WRD) %R% REF2 %R% REF1
+str_view(boy_names, 
+  pattern = pair_that_reverses, 
+  match = TRUE)
+
+# See four letter palindrome names
+four_letter_palindrome <- exactly(capture(WRD) %R% capture(WRD) %R% REF2 %R% REF1)
+str_view(boy_names, 
+  pattern = four_letter_palindrome, 
+  match = TRUE)
+
+# See six letter palindrome names
+six_letter_palindrome <- exactly(capture(WRD) %R% capture(WRD) %R% capture(WRD) 
+                                 %R% REF3 %R% REF2 %R% REF1)
+str_view(boy_names, 
+  pattern = six_letter_palindrome, 
+  match = TRUE)
+
+boy_names <- old_boy_names
 ```
 
+```{r}
+# View text containing phone numbers
+contact
+
+# Replace digits with "X"
+str_replace(contact, pattern = DGT, replacement = "X")
+
+# Replace all digits with "X"
+str_replace_all(contact, pattern = DGT, replacement = "X")
+
+# Replace all digits with different symbol
+str_replace_all(contact, pattern = DGT, 
+  replacement = c("X", ".", "*", "_"))
+```
+
+```{r}
+# data prep
+# > cat(adverbs, sep='", "')
+adverbs <- c("ABNORMALLY", "ABSENTMINDEDLY", "ACCIDENTALLY", "ACIDLY", "ACTUALLY", "ADVENTUROUSLY", "AFTERWARDS", "ALMOST", "ALWAYS", "ANGRILY", "ANNUALLY", "ANXIOUSLY", "ARROGANTLY", "AWKWARDLY", "BADLY", "BASHFULLY", "BEAUTIFULLY", "BITTERLY", "BLEAKLY", "BLINDLY", "BLISSFULLY", "BOASTFULLY", "BOLDLY", "BRAVELY", "BRIEFLY", "BRIGHTLY", "BRISKLY", "BROADLY", "BUSILY", "CALMLY", "CAREFULLY", "CARELESSLY", "CAUTIOUSLY", "CERTAINLY", "CHEERFULLY", "CLEARLY", "CLEVERLY", "CLOSELY", "COAXINGLY", "COLORFULLY", "COMMONLY", "CONTINUALLY", "COOLLY", "CORRECTLY", "COURAGEOUSLY", "CROSSLY", "CRUELLY", "CURIOUSLY", "DAILY", "DAINTILY", "DEARLY", "DECEIVINGLY", "DEEPLY", "DEFIANTLY", "DELIBERATELY", "DELIGHTFULLY", "DILIGENTLY", "DIMLY", "DOUBTFULLY", "DREAMILY", "EASILY", "ELEGANTLY", "ENERGETICALLY", "ENORMOUSLY", "ENTHUSIASTICALLY", "EQUALLY", "ESPECIALLY", "EVEN", "EVENLY", "EVENTUALLY", "EXACTLY", "EXCITEDLY", "EXTREMELY", "FAIRLY", "FAITHFULLY", "FAMOUSLY", "FAR", "FAST", "FATALLY", "FEROCIOUSLY", "FERVENTLY", "FIERCELY", "FONDLY", "FOOLISHLY", "FORTUNATELY", "FRANKLY", "FRANTICALLY", "FREELY", "FRENETICALLY", "FRIGHTFULLY", "FULLY", "FURIOUSLY", "GENERALLY", "GENEROUSLY", "GENTLY", "GLADLY", "GLEEFULLY", "GRACEFULLY", "GRATEFULLY", "GREATLY", "GREEDILY", "HAPPILY", "HASTILY", "HEALTHILY", "HEAVILY", "HELPFULLY", "HELPLESSLY", "HIGHLY", "HONESTLY", "HOPELESSLY", "HOURLY", "HUNGRILY", "IMMEDIATELY", "INNOCENTLY", "INQUISITIVELY", "INSTANTLY", "INTENSELY", "INTENTLY", "INTERESTINGLY", "INWARDLY", "IRRITABLY", "JAGGEDLY", "JEALOUSLY", "JOSHINGLY", "JOVIALLY", "JOYFULLY", "JOYOUSLY", "JUBILANTLY", "JUDGEMENTALLY", "JUSTLY", "KEENLY", "KIDDINGLY", "KINDHEARTEDLY", "KINDLY", "KISSINGLY", "KNAVISHLY", "KNOTTILY", "KNOWINGLY", "KNOWLEDGEABLY", "KOOKILY", "LAZILY", "LESS", "LIGHTLY", "LIKELY", "LIMPLY", "LIVELY", "LOFTILY", "LONGINGLY", "LOOSELY", "LOUDLY", "LOVINGLY", "LOYALLY", "MADLY", "MAJESTICALLY", "MEANINGFULLY", "MECHANICALLY", "MERRILY", "MISERABLY", "MOCKINGLY", "MONTHLY", "MORE", "MORTALLY", "MOSTLY", "MYSTERIOUSLY", "NATURALLY", "NEARLY", "NEATLY", "NEEDILY", "NERVOUSLY", "NEVER", "NICELY", "NOISILY", "NOT", "OBEDIENTLY", "OBNOXIOUSLY", "ODDLY", "OFFENSIVELY", "OFFICIALLY", "OFTEN", "ONLY", "OPENLY", "OPTIMISTICALLY", "OVERCONFIDENTLY", "OWLISHLY", "PAINFULLY", "PARTIALLY", "PATIENTLY", "PERFECTLY", "PHYSICALLY", "PLAYFULLY", "POLITELY", "POORLY", "POSITIVELY", "POTENTIALLY", "POWERFULLY", "PROMPTLY", "PROPERLY", "PUNCTUALLY", "QUAINTLY", "QUARRELSOMELY", "QUEASILY", "QUEERLY", "QUESTIONABLY", "QUESTIONINGLY", "QUICKER", "QUICKLY", "QUIETLY", "QUIRKILY", "QUIZZICALLY", "RAPIDLY", "RARELY", "READILY", "REALLY", "REASSURINGLY", "RECKLESSLY", "REGULARLY", "RELUCTANTLY", "REPEATEDLY", "REPROACHFULLY", "RESTFULLY", "RIGHTEOUSLY", "RIGHTFULLY", "RIGIDLY", "ROUGHLY", "RUDELY", "SADLY", "SAFELY", "SCARCELY", "SCARILY", "SEARCHINGLY", "SEDATELY", "SEEMINGLY", "SELDOM", "SELFISHLY", "SEPARATELY", "SERIOUSLY", "SHAKILY", "SHARPLY", "SHEEPISHLY", "SHRILLY", "SHYLY", "SILENTLY", "SLEEPILY", "SLOWLY", "SMOOTHLY", "SOFTLY", "SOLEMNLY", "SOLIDLY", "SOMETIMES", "SOON", "SPEEDILY", "STEALTHILY", "STERNLY", "STRICTLY", "SUCCESSFULLY", "SUDDENLY", "SURPRISINGLY", "SUSPICIOUSLY", "SWEETLY", "SWIFTLY", "SYMPATHETICALLY", "TENDERLY", "TENSELY", "TERRIBLY", "THANKFULLY", "THOROUGHLY", "THOUGHTFULLY", "TIGHTLY", "TOMORROW", "TOO", "TREMENDOUSLY", "TRIUMPHANTLY", "TRULY", "TRUTHFULLY", "ULTIMATELY", "UNABASHEDLY", "UNACCOUNTABLY", "UNBEARABLY", "UNETHICALLY", "UNEXPECTEDLY", "UNFORTUNATELY", "UNIMPRESSIVELY", "UNNATURALLY", "UNNECESSARILY", "UPBEAT", "UPLIFTINGLY", "UPRIGHT", "UPSIDE-DOWN", "UPWARD", "UPWARDLY", "URGENTLY", "USEFULLY", "USELESSLY", "USUALLY", "UTTERLY", "VACANTLY", "VAGUELY", "VAINLY", "VALIANTLY", "VASTLY", "VERBALLY", "VERY", "VICIOUSLY", "VICTORIOUSLY", "VIOLENTLY", "VIVACIOUSLY", "VOLUNTARILY", "WARMLY", "WEAKLY", "WEARILY", "WELL", "WETLY", "WHOLLY", "WILDLY", "WILLFULLY", "WISELY", "WOEFULLY", "WONDERFULLY", "WORRIEDLY", "WRONGLY", "YAWNINGLY", "YEARLY", "YEARNINGLY", "YESTERDAY", "YIELDINGLY", "YOUTHFULLY")
+```
+
+```{r}
+# Build pattern to match words ending in "ING"
+pattern <- capture(one_or_more(WRD) %R% "ING")
+str_view(narratives, pattern)
+
+# Test replacement
+str_replace(narratives, pattern, str_c("CARELESSLY", REF1, sep = " "))
+
+# One adverb per narrative
+adverbs_10 <- sample(adverbs, 10)
+
+# Replace "***ing" with "adverb ***ing"
+str_replace(narratives, pattern, str_c(adverbs_10, REF1, sep = " "))
+```
+
+```{r}
+require(stringi)
+
+# Names with builtin accents
+(tay_son_builtin <- c(
+  "Nguy\u1ec5n Nh\u1ea1c", 
+  "Nguy\u1ec5n Hu\u1ec7",
+  "Nguy\u1ec5n Quang To\u1ea3n"
+))
+
+# Convert to separate accents
+tay_son_separate <- stringi::stri_trans_nfd(tay_son_builtin)
+
+# Verify that the string prints the same
+tay_son_separate
+
+# Match all accents
+str_view_all(tay_son_separate, pattern = UP_DIACRITIC)
+```
+
+```{r}
+# tay_son_separate has been pre-defined
+tay_son_separate
+
+# View all the characters in tay_son_separate
+str_view_all(tay_son_separate, pattern = ANY_CHAR)
+
+# View all the graphemes in tay_son_separate
+str_view_all(tay_son_separate, pattern = GRAPHEME)
+
+# Combine the diacritics with their letters
+tay_son_builtin <- stri_trans_nfc(tay_son_separate)
+
+# View all the graphemes in tay_son_builtin
+str_view_all(tay_son_builtin, pattern = GRAPHEME)
+```
 
 
 
