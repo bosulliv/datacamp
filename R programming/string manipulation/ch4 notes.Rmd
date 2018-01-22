@@ -1,0 +1,83 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 4
+
+```{r}
+hero_contacts <- c("(wolverine@xmen.com)", "wonderwoman@justiceleague.org", "thor@avengers.com")
+
+# Capture part between @ and . and after .
+email <- capture(one_or_more(WRD)) %R% 
+  "@" %R% capture(one_or_more(WRD)) %R% 
+  DOT %R% capture(one_or_more(WRD))
+
+# Check match hasn't changed
+str_view(hero_contacts, pattern = email)
+
+# Pull out match and captures
+email_parts <- str_match(hero_contacts, pattern = email)
+
+# Print email_parts
+email_parts
+
+# Save host
+host <- email_parts[, 3]
+host
+```
+
+
+```{r}
+# View text containing phone numbers
+contact
+
+# Add capture() to get digit parts
+phone_pattern <- capture(three_digits) %R% zero_or_more(separator) %R% 
+           capture(three_digits) %R% zero_or_more(separator) %R%
+           capture(four_digits)
+           
+# Pull out the parts with str_match()
+phone_numbers <- str_match(contact, pattern = phone_pattern)
+
+# Put them back together
+str_c(
+  "(",
+  phone_numbers[,2],
+  ") ",
+  phone_numbers[,3],
+  "-",
+  phone_numbers[,4])
+```
+
+```{r}
+# narratives has been pre-defined
+narratives
+
+# Add capture() to get age, unit and sex
+pattern <- capture(optional(DGT) %R% DGT) %R%  
+  optional(SPC) %R% capture(or("YO", "YR", "MO")) %R%
+  optional(SPC) %R% capture(or("M", "F"))
+
+# Pull out from narratives
+str_match(narratives, pattern)
+
+# Edit to capture just Y and M in units
+pattern2 <- capture(optional(DGT) %R% DGT) %R%  
+  optional(SPC) %R% capture(or("Y", "M")) %R% optional(or("O","R")) %R%
+  optional(SPC) %R% capture(or("M", "F"))
+
+# Check pattern
+str_view(narratives, pattern = pattern2)
+
+# Pull out pieces
+str_match(narratives, pattern = pattern2)
+```
+
+```{r}
+
+```
+
+
+
+
