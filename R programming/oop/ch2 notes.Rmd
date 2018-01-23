@@ -70,4 +70,103 @@ methods(print)
 methods(class = data.frame)
 ```
 
+The fastest parts of R are written in C, and the lowest level C interface in R is called primitives.
+
+```{r}
+# Here are some prmitive functions - notice backtick to stop if being evaluated.
+`if`
+`+`
+exp
+
+# List S3 functions that are written in C at primitive level
+.S3PrimitiveGenerics
+
+```
+
+```{r}
+# data prep
+# > cat(hair$styles, sep='", "')
+styles <- c("afro", "beehive", "crew cut", "mohawk", "mullet", "pony tail", "quiff")
+
+# > cat(hair$colors, sep='", "')
+colors <- c("black", "brown", "blonde", "ginger", "grey")
+
+hair = list(colors = colors, styles = styles)
+
+class(hair) <- "hairstylist"
+```
+
+```{r}
+# View the structure of hair
+str(hair)
+
+# What primitive generics are available?
+.S3PrimitiveGenerics
+
+# Does length.hairstylist exist?
+exists("length.hairstylist")
+
+# What is the length of hair?
+length(hair)
+```
+
+```{r}
+methods("is.na")
+```
+
+```{r}
+# Data prep
+kitty <- "Miaow!"
+
+# View the kitty
+kitty
+
+# Assign classes
+class(kitty) <- c("cat", "mammal", "character")
+
+# Does kitty inherit from cat/mammal/character vector?
+inherits(kitty, 'cat')
+inherits(kitty, 'mammal')
+inherits(kitty, 'character')
+
+# Is kitty a character vector?
+is.character(kitty)
+
+# Does kitty inherit from dog?
+inherits(kitty, 'dog')
+```
+
+```{r}
+# data prep
+what_am_i <- function(x, ...)
+{
+  UseMethod("what_am_i")
+}
+
+# Inspect your workspace
+ls.str()
+
+# cat method
+what_am_i.cat <- function(x, ...)
+{
+  # Write a message
+  message("I'm a cat")
+  # Call NextMethod
+  NextMethod("mammal")
+}
+
+# mammal method
+what_am_i.mammal <- function(x, ...) {
+  message("I'm a mammal")
+  NextMethod("character")
+}
+
+# character method
+what_am_i.character <- function(x, ...) {
+  message("I'm a character vector")
+}
+
+# Call what_am_i()
+what_am_i(kitty)
+```
 
