@@ -40,9 +40,13 @@ microwave_oven_factory <- R6Class(
       private$..power_rating_watts
     },
     power_level_watts = function(value) {
-      assert_is_numeric(value)
-      assert_all_are_in_closed_range(value, 0, private$..power_rating_watts)
-      private$..power_level_watts <- value
+      if(!missing(value)) {
+        assert_is_numeric(value)
+        assert_all_are_in_closed_range(value, 0, private$..power_rating_watts)
+        private$..power_level_watts <- value
+      } else {
+        private$..power_level_watts
+      }
     }
   )
 )
