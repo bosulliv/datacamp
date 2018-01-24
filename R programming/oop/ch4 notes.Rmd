@@ -181,3 +181,7 @@ a_high_end_microwave <- high_end_microwave_oven_factory$new()
 a_high_end_microwave$cook(1)
 ```
 
+
+
+
+
