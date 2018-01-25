@@ -1,0 +1,36 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 1
+
+```{r}
+library(tidyverse)
+library(rpart)
+library(rpart.plot)
+# data prep
+credit <- read_csv("https://assets.datacamp.com/production/course_3022/datasets/credit.csv")
+```
+
+```{r}
+set.seed(42)
+vars <- c("months_loan_duration", "percent_of_income", "years_at_residence", "age", "default")
+creditsub <- credit %>% select(vars)
+idx <- sample(1:nrow(creditsub), 522)
+creditsub <- creditsub[idx,]
+```
+
+```{r}
+# Look at the data
+str(creditsub)
+
+# Create the model
+credit_model <- rpart(formula = default ~ ., 
+                      data = creditsub, 
+                      method = "class")
+
+# Display the results
+rpart.plot(x = credit_model, yesno = 2, type = 0, extra = 0)
+```
+
