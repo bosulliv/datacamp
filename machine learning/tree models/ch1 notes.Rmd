@@ -94,7 +94,7 @@ credit_model2 <- rpart(formula = default ~ .,
 # Generate predictions on the validation set using the gini model
 pred1 <- predict(object = credit_model1, 
              newdata = credit_test,
-             type = "class")    
+             type = "class")
 
 # Generate predictions on the validation set using the information model
 pred2 <- predict(object = credit_model2, 
