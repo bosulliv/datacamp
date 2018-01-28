@@ -13,6 +13,7 @@ library(rpart)
 library(rpart.plot)
 # data prep
 credit <- read_csv("https://assets.datacamp.com/production/course_3022/datasets/credit.csv")
+credit <- credit %>% mutate_if(is.character, factor)
 ```
 
 ```{r}
@@ -106,6 +107,13 @@ ce(actual = credit_test$default,
    predicted = pred1)
 ce(actual = credit_test$default, 
    predicted = pred2)  
+
+# for later exercise
+preds <- predict(object = credit_model2, 
+             newdata = credit_test,
+             type = "prob")
+
+dt_preds <- preds[,2]
 ```
 
 
