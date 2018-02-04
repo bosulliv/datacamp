@@ -6,13 +6,16 @@ output: html_notebook
 # Chapter 1
 
 ```{r}
+rm(list = ls())
 #install.packages("sparklyr")
+#devtools::install_github("rstudio/sparklyr")
+devtools::install_github("tidyverse/magrittr")
 library(sparklyr)
 #spark_install()
 ```
 
 ```{r}
-# data prep
+# data prep - DONT NEED TO RUN THIS!
 spark_conn <- function (master = "local", spark_home = Sys.getenv("SPARK_HOME"), 
     method = c("shell", "livy", "databricks", "test"), app_name = "sparklyr", 
     version = NULL, hadoop_version = NULL, config = spark_config(), 
@@ -29,9 +32,12 @@ spark_disconnect <- function (sc, ...)
     Sys.sleep(0.25)
     invisible()
 }
+```
 
+```{r}
 # Load sparklyr
 library(sparklyr)
+#devtools::install_github("rstudio/sparklyr")
 
 # Connect to your Spark cluster
 spark_conn <- spark_connect(master = "local")
@@ -40,6 +46,161 @@ spark_conn <- spark_connect(master = "local")
 spark_version(sc = spark_conn)
 
 # Disconnect from Spark
-spark_disconnect(spark_conn)
+#spark_disconnect(spark_conn)
+```
+
+Wow - this is running a local Spark and Hadoop cluster on my machine!
+
+```{r}
+# data prep
+track_metadata <- readRDS(gzcon(url("https://assets.datacamp.com/production/course_3309/datasets/track_metadata.rds")))
+```
+
+```{r}
+# Needs latest dplyr to work with sparklyr - 0.7.2 doesn't have tbl_sql
+devtools::install_github("tidyverse/dplyr")
+
+# Load dplyr
+#library(dplyr)
+
+# Explore track_metadata structure
+str(track_metadata)
+
+# Connect to your Spark cluster
+spark_conn <- spark_connect(master = "local")
+
+# Copy track_metadata to Spark
+# empty data causes array of bounds error with default
+# serializer = "csv_string". Using "csv_file" fixes that.
+track_metadata_tbl <- sparklyr::sdf_copy_to(spark_conn, 
+                              track_metadata[,1:2], 
+                              overwrite = TRUE,
+                              serializer = "csv_file")
+
+# List the data frames available in Spark
+src_tbls(spark_conn)
+sparklyr::src_databases(spark_conn)
+
+sparklyr::list
+
+# Disconnect from Spark
+#spark_disconnect(spark_conn)
+```
+
+```{r}
+# data prep
+library(pryr)
+spark_conn <- spark_connect(master = "local")
+src_tbls(spark_conn)
+
+# Link to the track_metadata table in Spark
+track_metadata_tbl <- tbl(spark_conn, "track_metadata")
+
+# See how big the dataset is
+dim(track_metadata_tbl)
+
+# See how small the tibble is
+object_size(track_metadata_tbl)
+
+#spark_disconnect(spark_conn)
+```
+
+```{r}
+src_tbls(spark_conn)
+
+# Print 5 rows, all columns
+# can't get this to work...
+#print(track_metadata_tbl, n = 5, width = Inf)
+
+# Examine structure of tibble
+str(track_metadata_tbl)
+
+# Examine structure of data
+glimpse(track_metadata_tbl)
+```
+
+The exercise gives this output...
+
+```
+> # Print 5 rows, all columns
+> print(track_metadata_tbl, n = 5, width = Inf)
+# Source:   table<track_metadata> [?? x 11]
+# Database: spark_connection
+            track_id                     title            song_id                                           release          artist_id                          artist_mbid                     artist_name duration artist_familiarity artist_hotttnesss  year
+               <chr>                     <chr>              <chr>                                             <chr>              <chr>                                <chr>                           <chr>    <dbl>              <dbl>             <dbl> <int>
+1 TRSTWXA12903D15238          The Breeze and I SOCQMXH12AC468B61D                                            Espana ARNNU4G1187FB5991B 5c176092-cb4d-4e05-806b-1e9414f2b28c                     101 Strings 221.1000          0.4669621         0.3687790  1968
+2 TRQNQZX128F422BA2F   Soul Of A Short Fat Man SOWULXB12A6D4FC1AD                         Diary Of A Band Vol 1 & 2 ARJ9DSA1187B990E00 4756395c-57ed-4a63-afb2-01117f14dff6 John Mayall & The Bluesbreakers 368.1955          0.6268031         0.4052347  1968
+3 TRTPVEB128F42614A6       The Galloping Latin SOHKYIC12A8AE48D00                             The Blues; That's Me! ARQ8CJ61187FB3DC9C 15ab8bb8-7348-4377-ab73-b7acdad1459c                Illinois Jacquet 329.1424          0.4405487         0.3548943  1969
+4 TRZZNFB128F933E7D2      The Twelfth Of Never SOJVHKV12AB0182669 Give Me Just A Little More Time + In Session&plus ARFAKTH1187B9B0C18 0174d942-39da-4dcd-aa48-d0f3fb4f218d           Chairmen Of The Board 193.2534          0.5358244         0.4150033  1970
+5 TRZAAWN128F92EAC1C Little Child Runnin' Wild SORYVBT12AB017BB45                 Beautiful Brother - The Essential ARNMWP51187FB3E963 4dca4bb2-23ba-4103-97e6-5810311db33a                 Curtis Mayfield 320.8093          0.7869212         0.4953067  1972
+# ... with 995 more rows
+> 
+> # Examine structure of tibble
+> str(track_metadata_tbl)
+List of 2
+ $ src:List of 1
+  ..$ con:List of 11
+  .. ..$ master       : chr "local[4]"
+  .. ..$ method       : chr "shell"
+  .. ..$ app_name     : chr "sparklyr"
+  .. ..$ config       :List of 5
+  .. .. ..$ sparklyr.cores.local              : int 4
+  .. .. ..$ spark.sql.shuffle.partitions.local: int 4
+  .. .. ..$ spark.env.SPARK_LOCAL_IP.local    : chr "127.0.0.1"
+  .. .. ..$ sparklyr.csv.embedded             : chr "^1.*"
+  .. .. ..$ sparklyr.shell.driver-class-path  : chr ""
+  .. .. ..- attr(*, "config")= chr "default"
+  .. .. ..- attr(*, "file")= chr "/usr/local/lib/R/site-library/sparklyr/conf/config-template.yml"
+  .. ..$ spark_home   : chr "/home/repl/.cache/spark/spark-2.1.0-bin-hadoop2.7"
+  .. ..$ backend      :Classes 'sockconn', 'connection'  atomic [1:1] 4
+  .. .. .. ..- attr(*, "conn_id")=<externalptr> 
+  .. ..$ monitor      :Classes 'sockconn', 'connection'  atomic [1:1] 3
+  .. .. .. ..- attr(*, "conn_id")=<externalptr> 
+  .. ..$ output_file  : chr "/tmp/RtmpG2ydU2/file15252b23c_spark.log"
+  .. ..$ spark_context:Classes 'spark_jobj', 'shell_jobj' <environment: 0x1f8aae0> 
+  .. ..$ java_context :Classes 'spark_jobj', 'shell_jobj' <environment: 0x1789328> 
+  .. ..$ hive_context :Classes 'spark_jobj', 'shell_jobj' <environment: 0x3015d30> 
+  .. ..- attr(*, "class")= chr [1:3] "spark_connection" "spark_shell_connection" "DBIConnection"
+  ..- attr(*, "class")= chr [1:3] "src_spark" "src_sql" "src"
+ $ ops:List of 2
+  ..$ x   :Classes 'ident', 'character'  chr "track_metadata"
+  ..$ vars: chr [1:11] "track_id" "title" "song_id" "release" ...
+  ..- attr(*, "class")= chr [1:3] "op_base_remote" "op_base" "op"
+ - attr(*, "class")= chr [1:4] "tbl_spark" "tbl_sql" "tbl_lazy" "tbl"
+> 
+> # Examine structure of data
+> glimpse(track_metadata_tbl)
+Observations: 25
+Variables: 11
+$ track_id           <chr> "TRSTWXA12903D15238", "TRQNQZX128F422BA2F", "TRT...
+$ title              <chr> "The Breeze and I", "Soul Of A Short Fat Man", "...
+$ song_id            <chr> "SOCQMXH12AC468B61D", "SOWULXB12A6D4FC1AD", "SOH...
+$ release            <chr> "Espana", "Diary Of A Band Vol 1 & 2", "The Blue...
+$ artist_id          <chr> "ARNNU4G1187FB5991B", "ARJ9DSA1187B990E00", "ARQ...
+$ artist_mbid        <chr> "5c176092-cb4d-4e05-806b-1e9414f2b28c", "4756395...
+$ artist_name        <chr> "101 Strings", "John Mayall & The Bluesbreakers"...
+$ duration           <dbl> 221.1000, 368.1955, 329.1424, 193.2534, 320.8093...
+$ artist_familiarity <dbl> 0.4669621, 0.6268031, 0.4405487, 0.5358244, 0.78...
+$ artist_hotttnesss  <dbl> 0.3687790, 0.4052347, 0.3548943, 0.4150033, 0.49...
+$ year               <int> 1968, 1968, 1969, 1970, 1972, 1977, 1978, 1979, ...
+> 
+```
+
+```{r}
+# track_metadata_tbl has been pre-defined
+#track_metadata_tbl
+
+# Manipulate the track metadata
+track_metadata_tbl %>%
+  # Select columns
+  select(artist_name, release, title, year)
+
+# Try to select columns using [ ]
+tryCatch({
+    # Selection code here
+    track_metadata_tbl[,c("artist_name", "release", "title", "year")]
+  },
+  error = print
+)
 ```
 
