@@ -1,0 +1,69 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 1
+
+```{r}
+# Here are the URLs! As you can see they're just normal strings
+csv_url <- "http://s3.amazonaws.com/assets.datacamp.com/production/course_1561/datasets/chickwts.csv"
+tsv_url <- "http://s3.amazonaws.com/assets.datacamp.com/production/course_3026/datasets/tsv_data.tsv"
+
+# Read a file in from the CSV URL and assign it to csv_data
+csv_data <- read.csv(csv_url)
+
+# Read a file in from the TSV URL and assign it to tsv_data
+tsv_data <- read.delim(tsv_url)
+
+# Examine the objects with head()
+head(csv_data)
+head(tsv_data)
+```
+
+```{r}
+# Download the file with download.file()
+download.file(url = csv_url, destfile = "feed_data.csv")
+
+# Read it in with read.csv()
+csv_data <- read.csv("feed_data.csv")
+```
+
+```{r}
+# Add a new column: square_weight
+csv_data$square_weight <- csv_data$weight ^ 2
+
+# Save it to disk with saveRDS()
+saveRDS(csv_data, "modified_feed_data.RDS")
+
+# Read it back in with readRDS()
+modified_feed_data <- readRDS("modified_feed_data.RDS")
+
+# Examine modified_feed_data
+str(modified_feed_data)
+```
+
+```{r}
+# Load pageviews
+#install.packages("pageviews")
+library(pageviews)
+
+# Get the pageviews for "Hadley Wickham"
+hadley_pageviews <- article_pageviews(project = "en.wikipedia", "Hadley Wickham")
+
+# Examine the resulting object
+str(hadley_pageviews)
+```
+
+```{r}
+api_key <- "d8ed66f01da01b0c6a0070d7c1503801993a39c126fbc3382"
+
+# Load birdnik
+#install.packages("birdnik")
+library(birdnik)
+
+# Get the word frequency for "vector", using api_key to access it
+vector_frequency <- word_frequency(api_key, "vector")
+```
+
+

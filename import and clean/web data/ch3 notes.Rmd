@@ -1,0 +1,53 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 3
+
+```{r}
+library(jsonlite)
+library(httr)
+
+rev_history <- function(title, format = "json"){
+  if (title != "Hadley Wickham") {
+    stop('rev_history() only works for `title = "Hadley Wickham"`')
+  }
+  
+  if (format == "json"){
+    resp <- readRDS("had_rev_json.rds")
+  } else if (format == "xml"){
+    resp <- readRDS("had_rev_xml.rds")
+  } else {
+    stop('Invalid format supplied, try "json" or "xml"')
+  }
+  resp  
+}
+```
+
+```{r}
+# data prep - just get this data with httr...
+url <- "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia.org/all-access/all-agents/Hadley_Wickham/daily/20170101/20170102"
+
+# Make a GET request to url and save the results
+resp_json <- GET(url)
+
+# Get revision history for "Hadley Wickham"
+#resp_json <- get_pageviews("Hadley_Wickham")
+
+# Check http_type() of resp_json
+http_type(resp_json)
+
+# Examine returned text with content()
+content(resp_json, as = "text")
+
+# Parse response with content()
+content(resp_json, as = "parsed")
+
+# Parse returned text with fromJSON()
+library(jsonlite)
+fromJSON(content(resp_json, as = "text"))
+```
+
+
+
