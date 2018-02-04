@@ -1,0 +1,290 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 3
+
+```{r}
+# The date of landing and moment of step
+date_landing <- mdy("July 20, 1969")
+moment_step <- mdy_hms("July 20, 1969, 02:56:15", tz = "UTC")
+
+# How many days since the first man on the moon?
+difftime(today(), date_landing, units = "days")
+
+# How many seconds since the first man on the moon?
+difftime(now(), moment_step, units = "secs")
+```
+
+```{r}
+# Three dates
+mar_11 <- ymd_hms("2017-03-11 12:00:00", 
+  tz = "America/Los_Angeles")
+mar_12 <- ymd_hms("2017-03-12 12:00:00", 
+  tz = "America/Los_Angeles")
+mar_13 <- ymd_hms("2017-03-13 12:00:00", 
+  tz = "America/Los_Angeles")
+
+# Difference between mar_13 and mar_12 in seconds
+difftime(mar_13, mar_12, units = "secs")
+
+# Difference between mar_12 and mar_11 in seconds
+difftime(mar_12, mar_11, units = "secs")
+```
+
+```{r}
+# Add a period of one week to mon_2pm
+mon_2pm <- dmy_hm("27 Aug 2018 14:00")
+mon_2pm + weeks(1)
+
+# Add a duration of 81 hours to tue_9am
+tue_9am <- dmy_hm("28 Aug 2018 9:00")
+tue_9am + dhours(81)
+
+# Subtract a period of five years from today()
+today() - years(5)
+
+# Subtract a duration of five years from today()
+today() - dyears(5)
+```
+
+```{r}
+# Time of North American Eclipse 2017
+eclipse_2017 <- ymd_hms("2017-08-21 18:26:40")
+
+# Duration of 29 days, 12 hours, 44 mins and 3 secs
+synodic <- ddays(29) + dhours(12) + dminutes(44) + dseconds(3)
+
+# 223 synodic months
+saros <- 223 * synodic
+
+# Add saros to eclipse_2017
+eclipse_2017 + saros
+```
+
+```{r}
+# Add a period of 8 hours to today
+today_8am <- today() + hours(8)
+
+# Sequence of two weeks from 1 to 26
+every_two_weeks <- 1:26 * weeks(2)
+
+# Create datetime for every two weeks for a year
+today_8am + every_two_weeks
+```
+
+```{r}
+jan_31 = ymd("2018-01-31")
+
+# A sequence of 1 to 12 periods of 1 month
+month_seq <- 1:12 * months(1)
+
+# Add 1 to 12 months to jan_31
+jan_31 + month_seq
+
+# Replace + with %m+%
+jan_31 %m+% month_seq
+
+# Replace + with %m-%
+jan_31 %m-% month_seq
+
+```
+
+```{r}
+# prep data
+# > cat(monarchs$name, sep='", "')
+mname <- c("Elizabeth II", "Victoria", "George V", "George III", "George VI", "George IV", "Edward VII", "William IV", "Edward VIII", "George III(also United Kingdom)", "George II", "George I", "Anne", "Henry III", "Edward III", "Elizabeth I", "Henry VI", "Henry VI", "Æthelred II", "Æthelred II", "Henry VIII", "Charles II", "Henry I", "Henry II(co-ruler with Henry the Young King)", "Edward I", "Alfred the Great", "Edward the Elder", "Charles I", "Henry VII", "Edward the Confessor", "Richard II", "James I", "Edward IV", "Edward IV", "William I", "Edward II", "Cnut", "Stephen", "Stephen", "John", "Edgar I", "Æthelstan", "Henry IV", "William III(co-ruler with Mary II)", "Henry the Young King(co-ruler with Henry II)", "William II", "Richard I", "Eadred", "Henry V", "Edmund I", "Edward VI", "Mary II(co-ruler with William III)", "Mary I", "Anne(also Kingdom of Great Britain)", "Eadwig", "James II", "Edward the Martyr", "Harold I", "Harthacnut", "Richard III", "Louis (disputed)", "Harold II", "Edmund II", "Matilda (disputed)", "Edward V", "Edgar II", "Sweyn Forkbeard", "Jane (disputed)", "James VI", "William I", "Constantine II", "David II", "Alexander III", "Malcolm III", "Alexander II", "James I", "Malcolm II", "James V", "David I", "James III", "Charles II", "Charles II", "James IV", "Mary I", "Charles I", "Kenneth II", "James II", "Robert I", "Robert II", "Alexander I", "Macbeth", "Robert III", "Constantine I", "Kenneth MacAlpin", "William II", "Malcolm IV", "Giric(co-ruler with Eochaid?)", "Donald II", "Malcolm I", "Edgar", "Kenneth III", "Indulf", "Duncan I", "Mary II", "Amlaíb", "Anne(also Kingdom of Great Britain)", "Dub", "Cuilén", "Domnall mac Ailpín", "James VII", "Margaret", "John Balliol", "Donald III", "Constantine III", "Áed mac Cináeda", "Lulach", "Duncan II", "Ruaidrí Ua Conchobair", "Edward Bruce (disputed)", "Brian Ua Néill (disputed)", "Gruffudd ap Cynan", "Llywelyn the Great", "Owain Gwynedd", "Dafydd ab Owain Gwynedd", "Hywel ab Owain Gwynedd", "Llywelyn ap Gruffudd", "Owain Glyndŵr (disputed)", "Owain Goch ap Gruffydd", "Owain Lawgoch (disputed)", "Dafydd ap Llywelyn", "Dafydd ap Gruffydd")
+
+# > cat(monarchs$from, sep=',', fill=T)
+mfrom <- c(
+  -564969600,-4182364800,-1882656000,-5333126400,-1043193600,-4731177600,
+-2175638400,-4402771200,-1071360000,-6601219200,-7653484800,-8060256000,
+-8289129600,NA,-20289052800,-12973824000,-17272310400,-15752275200,-31297881600,
+-30165609600,-14538182400,-10127203200,-27436060800,-25724822400,-21998736000,
+-34671283200,-33771600000,-10879747200,-15284937600,-29271196800,-18698342400,
+-11574316800,-16057094400,-15738278400,-28497657600,-20906121600,-30076531200,
+-26319427200,-26134444800,-24322204800,-31880476800,-32990112000,-17995564800,
+-8863689600,-25231392000,-27843091200,-24629875200,-32301763200,-17570390400,
+-32509382400,-13346294400,-8863689600,-13142044800,-8451561600,-32002128000,
+-8990524800,-31382812800,-29415398400,-29341440000,-15353020800,-23779699200,
+-28527120000,-30095625600,-26152416000,-15359760000,-28502668800,-30169065600,
+-13142822400,-12699849600,-25373779200,-33765897600,-20214403200,-22736419200,
+-28773446400,-23827910400,-17790105600,-30445286400,-14399856000,-26687491200,
+-16075497600,-10127203200,-9769766400,-15196464000,-13476412800,-10879747200,
+-31525372800,-16815427200,-20946643200,-18898099200,-27233107200,-29328480000,
+-18293644800,-34965043200,-35564659200,-8856172800,-25769664000,-34460121600,
+-34112966400,-32408985600,-27549158400,-30704832000,-32061830400,-29508969600,
+-8858764800,-31525372800,-8451561600,-31809369600,NA,-35091273600,-8990524800,
+-21556540800,-21367843200,-27648086400,-27612316800,-34491657600,-28791936000,
+-27633484800,-25371792000,-20656771200,-22468492800,-28054080000,-24456643200,
+-26286940800,-25245561600,-25245561600,-22626259200,-17965152000,-22842432000,
+-18860601600,-23027760000,-21681388800)
+
+# > cat(monarchs$to, sep=',', fill=T)
+mto <- c(
+  1517702400,-2175638400,-1071360000,-4731177600,-564969600,-4402771200,
+-1882656000,-4182364800,-1043193600,-5333126400,-6601219200,-7654435200,
+-8060256000,-21999081600,-18698428800,-11574316800,-16057094400,-15738278400,
+-30169065600,-30095625600,-13346294400,-8990524800,-26321241600,-24629875200,
+-20906121600,-33771686400,-32991494400,-10127203200,-14538268800,-28527120000,
+-17995564800,-10879747200,-15754694400,-15359760000,-27843091200,-20289484800,
+-29478556800,-26152416000,-25724822400,-23768726400,-31382899200,-32509382400,
+-17570476800,-8451561600,-24821424000,-27436147200,-24322204800,-32002128000,
+-17272310400,-32301763200,-13143168000,-8678448000,-12973824000,-8289216000,
+-31880476800,-8869219200,-31297881600,-29341440000,-29271196800,-15284937600,
+-23739523200,-28502755200,-30076531200,-26134444800,-15353020800,-28497225600,
+-30165609600,-13142044800,-10879747200,-23827910400,-32408985600,-18898099200,
+-21578227200,-27648086400,-22736419200,-16815427200,-29508969600,-13476412800,
+-25769664000,-15196464000,-10045468800,-8990524800,-14399856000,-12699849600,
+-10127203200,-30767990400,-16075497600,-20214403200,-18293644800,-26687491200,
+-28791936000,-17790105600,-34491657600,-35087558400,-8451561600,-25373779200,
+-34112966400,-33765897600,-32061830400,-27233107200,-30445286400,-31809369600,
+-29328480000,-8678448000,-31335984000,-8289216000,NA,-31525372800,-34956230400,
+-8869219200,-21435494400,-21252844800,-27549158400,-27549158400,-34460121600,
+-28773446400,-27616636800,-24519715200,-20550412800,-22405420800,-26286940800,
+-23027846400,-25245561600,-24456643200,-25245561600,-21681388800,-17482608000,
+-22563187200,-18666028800,-22842432000,-21655814400)
+
+# > cat(monarchs$dominion, sep='", "', fill=T)
+mdom <- c(
+"United Kingdom", "United Kingdom", "United Kingdom", "United Kingdom", "
+United Kingdom", "United Kingdom", "United Kingdom", "United Kingdom", "
+United Kingdom", "Great Britain", "Great Britain", "Great Britain", "
+Great Britain", "England", "England", "England", "England", "England", "
+England", "England", "England", "England", "England", "England", "England", "
+England", "England", "England", "England", "England", "England", "England", "
+England", "England", "England", "England", "England", "England", "England", "
+England", "England", "England", "England", "England", "England", "England", "
+England", "England", "England", "England", "England", "England", "England", "
+England", "England", "England", "England", "England", "England", "England", "
+England", "England", "England", "England", "England", "England", "England", "
+England", "Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "
+Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "
+Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "
+Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "
+Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "
+Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "
+Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "
+Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "Scotland", "
+Scotland", "Scotland", "Ireland", "Ireland", "Ireland", "Gwynedd", "Gwynedd", "
+Gwynedd", "Gwynedd", "Gwynedd", "Wales", "Wales", "Wales", "Wales", "Wales", "")
+```
+
+```{r}
+mfrom_posix <- as.POSIXct(mfrom, origin="1970-01-01")
+mto_posix <- as.POSIXct(mto, origin="1970-01-01")
+```
+
+```{r}
+# turn dates back into date time
+monarchs <- data.frame(name = mname,
+                      from = mfrom_posix,
+                      to = mto_posix,
+                      dominion = mdom,
+                      stringsAsFactors = FALSE)
+```
+
+
+```{r}
+# Print monarchs
+monarchs
+
+# Create an interval for reign
+monarchs <- monarchs %>%
+  mutate(reign = from %--% to) 
+
+# Find the length of reign, and arrange
+monarchs %>%
+  mutate(length = int_length(reign)) %>% 
+  arrange(desc(length)) %>%
+  select(name, length, dominion)
+
+```
+
+> glimpse(halleys)
+Observations: 27
+Variables: 6
+$ designation     <chr> "1P/66 B1, 66", "1P/141 F1, 141", "1P/218 H1, 218",...
+$ year            <int> 66, 141, 218, 295, 374, 451, 530, 607, 684, 760, 83...
+$ perihelion_date <date> 66-01-26, 141-03-25, 218-04-06, 295-04-07, 374-02-...
+$ start_date      <date> 66-01-25, 141-03-22, 218-04-06, 295-04-07, 374-02-...
+$ end_date        <date> 66-01-26, 141-03-25, 218-05-17, 295-04-20, 374-02-...
+$ distance        <chr> NA, NA, NA, NA, "0.09 AU", NA, NA, "0.09 AU", NA, N...
+
+
+```{r}
+# data prep
+designation <- c("1P/66 B1, 66", "1P/141 F1, 141", "1P/218 H1, 218", "1P/295 J1, 295", "1P/374 E1, 374", "1P/451 L1, 451", "1P/530 Q1, 530", "1P/607 H1, 607", "1P/684 R1, 684", "1P/760 K1, 760", "1P/837 F1, 837", "1P/912 J1, 912", "1P/989 N1, 989", "1P/1066 G1, 1066", "1P/1145 G1, 1145", "1P/1222 R1, 1222", "1P/1301 R1, 1301", "1P/1378 S1, 1378", "1P/1456 K1, 1456", "1P/1531 P1, 1531", "1P/1607 S1, 1607", "1P/1682 Q1, 1682", "1P/1758 Y1, 1759 I", "1P/1835 P1, 1835 III", "1P/1909 R1, 1910 II, 1909c", "1P/1982 U1, 1986 III, 1982i", NA)
+
+year <- c("66,141,218,295,374,451,530,607,684,760,837,912,989,1066,1145,1222,1301,1378,1456,1531,1607,1682,1758,1835,1910,1986,2061")
+
+perihelion_date <-
+  as.Date(
+    c(-695396,-667945,-639810,-611685,-582884,-554620,-525631,-497742,-469372,-441783,-413764,-386219,-358058,-330096,-301217,-272949,-244053,-215911,-187728,-160105,-132284,-104932,-77360,-48989,-21806,5883,33446),
+    origin = "1970-01-01")
+
+start_date <-
+  as.Date(
+    c(-695397,-667948,-639810,-611685,-582884,-554625,-525680,-497753,-469427,-441804,-413764,-386228,-358058,-330179,-301221,-272949,-244053,-215911,-187728,-160105,-132284,-104932,-77360,-49096,-21806,5883,33446),
+    origin = "1970-01-01")
+
+end_date <-
+  as.Date(
+    c(-695396,-667945,-639769,-611672,-582881,-554620,-525631,-497742,-469372,-441783,-413761,-386219,-358055,-330096,-301217,-272931,-244044,-215906,-187575,-160105,-132284,-104932,-77073,-48989,-21776,5883,33446),
+    origin = "1970-01-01")
+
+distance <- c("NA", "NA", "NA", "NA", "0.09 AU", "NA", "NA", "0.09 AU", "NA", "NA", "0.03 AU", "NA", "NA", "0.10 AU", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "0.586 AU", "NA")
+
+halleys <- data.frame(designation = designation,
+                      perihelion_date = perihelion_date,
+                      start_date = start_date,
+                      end_date = end_date,
+                      distance = distance,
+                      stringsAsFactors = FALSE)
+```
+
+
+
+```{r}
+# Print halleys
+halleys
+
+# New column for interval from start to end date
+halleys <- halleys %>% 
+  mutate(visible = start_date %--% end_date)
+
+# The visitation of 1066
+halleys_1066 <- halleys[14, ] 
+
+# Monarchs in power on perihelion date
+monarchs %>% 
+  filter(halleys_1066$perihelion_date %within% reign) %>%
+  select(name, from, to, dominion)
+
+# Monarchs whose reign overlaps visible time
+monarchs %>% 
+  filter(int_overlaps(halleys_1066$visible,reign)) %>%
+  select(name, from, to, dominion)
+
+```
+
+```{r}
+# New columns for duration and period
+monarchs <- monarchs %>%
+  mutate(
+    duration = as.duration(reign),
+    period = as.period(reign)) 
+    
+# Examine results    
+monarchs %>%
+  select(name, duration, period)
+```
+
+
+
+
+
+
+
+

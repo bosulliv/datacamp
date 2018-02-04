@@ -1,0 +1,45 @@
+---
+title: "R and Spark Clustrs: sparklyr"
+output: html_notebook
+---
+
+# Chapter 1
+
+```{r}
+#install.packages("sparklyr")
+library(sparklyr)
+#spark_install()
+```
+
+```{r}
+# data prep
+spark_conn <- function (master = "local", spark_home = Sys.getenv("SPARK_HOME"), 
+    method = c("shell", "livy", "databricks", "test"), app_name = "sparklyr", 
+    version = NULL, hadoop_version = NULL, config = spark_config(), 
+    extensions = sparklyr::registered_extensions()) 
+{
+    "Hi! You caught us!  Connecting to Spark is a slow operation, which is boring to watch.  This function is a cheat to avoid that.  If you want to see the real spark_connect() function, type sparklyr::spark_connect."
+    Sys.sleep(0.5)
+    .spark_conn
+}
+
+spark_disconnect <- function (sc, ...) 
+{
+    "Hi! You caught us!  Disconnecting from Spark is a slow operation, which is boring to watch.  This function is a cheat to avoid that.  If you want to see the real spark_disconnect() function, type sparklyr::spark_disconnect."
+    Sys.sleep(0.25)
+    invisible()
+}
+
+# Load sparklyr
+library(sparklyr)
+
+# Connect to your Spark cluster
+spark_conn <- spark_connect(master = "local")
+
+# Print the version of Spark
+spark_version(sc = spark_conn)
+
+# Disconnect from Spark
+spark_disconnect(spark_conn)
+```
+
