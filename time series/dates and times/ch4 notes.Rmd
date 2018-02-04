@@ -94,6 +94,41 @@ microbenchmark(
   times = 20)
 ```
 
+```{r}
+# Head of dates
+head(dates)
 
+# Parse dates with fast_strptime
+# 2016-01-01T00:00:00
+fast_strptime(dates, 
+    format = "%Y-%m-%dT%H:%M:%S") %>% str()
+
+# Comparse speed to ymd_hms() and fasttime
+microbenchmark(
+  ymd_hms = ymd_hms(dates),
+  fasttime = fastPOSIXct(dates),
+  fast_strptime = fast_strptime(dates, 
+    format = "%Y-%m-%dT%H:%M:%S"),
+  times = 20)
+```
+
+```{r}
+finished <- "I finished 'Dates and Times in R' on Thursday, September 20, 2017!"
+
+# Create a stamp based on "Sep 20 2017"
+date_stamp <- stamp("Sep 20 2017")
+
+# Print date_stamp
+date_stamp
+
+# Call date_stamp on today()
+date_stamp(today())
+
+# Create and call a stamp based on "09/20/2017"
+stamp("09/20/2017")(today())
+
+# Use string finished for stamp()
+stamp(finished)(today())
+```
 
 
