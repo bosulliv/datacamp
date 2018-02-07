@@ -1,0 +1,151 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 2
+
+```{r}
+#install.packages("bigtabulate")
+library(bigtabulate)
+```
+
+```{r}
+# data prep
+race_cat <- c("Native Am", "Asian", "Black", "Pacific Is", "White", "Two or More", "Hispanic", "Not Avail")
+
+# Load the bigtabulate package
+library(bigtabulate)
+
+# Call bigtable to create a variable called race_table
+race_table <- bigtable(mort, "borrower_race")
+
+# Rename the elements of race_table
+names(race_table) <- race_cat
+race_table
+```
+
+```{r}
+# Create a table of the borrower race by year
+race_year_table <- bigtable(mort, c("borrower_race", "year"))
+
+# Convert rydf to a data frame
+rydf <- as.data.frame(race_year_table)
+
+# Create the new column Race
+rydf$Race <- race_cat
+
+# Let's see what it looks like
+rydf
+```
+
+```{r}
+female_residence_prop <- function(x, rows) {
+    x_subset <- x[rows, ]
+    # Find the proporation of female borrowers in urban areas
+    prop_female_urban <- sum(x_subset[, "borrower_gender"] == 2 & 
+                                 x_subset[, "msa"] == 1) / 
+        sum(x_subset[, "msa"] == 1)
+    # Find the proporation of female borrowers in rural areas
+    prop_female_rural <- sum(x_subset[, "borrower_gender"] == 2 & 
+                                 x_subset[, "msa"] == 0) / 
+        sum(x_subset[, "msa"] == 0)
+    
+    c(prop_female_urban, prop_female_rural)
+}
+
+# Find the proportion of female borrowers in 2015
+female_residence_prop(mort, which(mort[,15] == 2015))
+```
+
+```{r}
+# Split the row numbers of the mortage data by year
+spl <- split(1:nrow(mort), mort[, 15])
+
+# Call str on spl
+str(spl)
+```
+
+```{r}
+# For each of the row splits, find the female residence proportion
+all_years <- Map(function(rows) female_residence_prop(mort, rows), spl)
+
+# Call str on all_years
+str(all_years)
+```
+
+```{r}
+# Collect the results as rows in a matrix
+prop_female <- Reduce(rbind, all_years)
+
+# Rename the row and column names
+dimnames(prop_female) <- list(names(all_years), c("prop_female_urban", "prop_femal_rural"))
+
+# View the matrix
+prop_female
+```
+
+```{r}
+# Load the tidyr and ggplot2 packages
+library(tidyr)
+library(ggplot2)
+
+# Convert prop_female to a data frame
+prop_female_df <- as.data.frame(prop_female)
+
+# Add a new column Year
+prop_female_df$Year <- row.names(prop_female_df)
+
+# Call gather on prop_female_df
+prop_female_long <- gather(prop_female_df, Region, Prop, -Year)
+
+# Create a line plot
+ggplot(prop_female_long, aes(x = Year, y = Prop, group = Region, color = Region)) + 
+    geom_line()
+```
+
+```{r}
+# data prep
+old_mort <- mort
+idx9 <- mort[,"borrower_income_ratio"] == 9
+mort[idx9,"borrower_income_ratio"] <- NA
+
+# Load biganalytics and dplyr packages
+library(biganalytics)
+library(dplyr)
+
+# Call summary on mort
+summary(mort)
+
+bir_df_wide <- bigtable(mort, c("borrower_income_ratio", "year")) %>% 
+    # Turn it into a data.frame
+    as.data.frame() %>% 
+    # Create a new column called BIR with the corresponding table categories
+    mutate(BIR = c(">=0,<=50%", ">50, <=80%", ">80%"))
+
+bir_df_wide
+
+mort <- old_mort
+```
+
+```{r}
+# Load the tidyr and ggplot2 packages
+library(tidyr)
+library(ggplot2)
+
+bir_df_wide %>% 
+    # Transform the wide-formatted data.frame into the long format
+    gather(Year, Count, -BIR) %>%
+    # Use ggplot to create a line plot
+    ggplot(aes(x = Year, y = Count, group = BIR, color = BIR)) + 
+    geom_line()
+```
+
+
+
+
+
+
+
+
+

@@ -49,5 +49,57 @@ library(jsonlite)
 fromJSON(content(resp_json, as = "text"))
 ```
 
+The resp_json object in the container is complicated - I can't find a way to seriarise the object in a way I can cut and paste. So I'm using a different version.
+```{r}
+# Load rlist
+#install.packages("rlist")
+library(rlist)
 
+# Examine output of this code
+str(content(resp_json), max.level = 4)
+
+# Store revision list
+items <- content(resp_json)$items
+
+# Extract the user element
+user_time <- list.select(items, timestamp, views)
+
+# Print user_time
+user_time
+
+# Stack to turn into a data frame
+list.stack(user_time)
+```
+
+```{r}
+# Load dplyr
+library(dplyr)
+
+# Pull out revision list
+revs <- content(resp_json)$items
+
+# Extract user and timestamp
+revs %>%
+  bind_rows() %>%           
+  select(views, timestamp)
+```
+
+```{r}
+# quick script to find EU IP's used by Amazon
+library(httr)
+library(jsonlite)
+library(rlist)
+
+url <- "https://ip-ranges.amazonaws.com/ip-ranges.json"
+resp_json <- GET(url)
+ips <- content(resp_json)$prefixes
+df <- list.stack(ips)
+df$service <- as.factor(df$service)
+eu <- subset(df, grepl('eu', region))
+table(eu$service)
+
+eu %>%
+  filter(service == "AMAZON") %>%
+  select(ip_prefix)
+```
 

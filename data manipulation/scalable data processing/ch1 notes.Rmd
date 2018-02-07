@@ -1,0 +1,106 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 1
+
+```{r}
+# Load the microbenchmark package
+library(microbenchmark)
+
+# Compare the timings for sorting different sizes of vector
+mb <- microbenchmark(
+  # Sort a random normal vector length 1e5
+  "1e5" = sort(rnorm(1e5)),
+  # Sort a random normal vector length 2.5e5
+  "2.5e5" = sort(rnorm(2.5e5)),
+  # Sort a random normal vector length 5e5
+  "5e5" = sort(rnorm(5e5)),
+  "7.5e5" = sort(rnorm(7.5e5)),
+  "1e6" = sort(rnorm(1e6)),
+  times = 10
+)
+
+# Plot the resulting benchmark object
+plot(mb)
+```
+
+```{r}
+#install.packages("bigmemory")
+library(bigmemory)
+```
+
+```{r}
+# data prep
+library(RCurl)
+download.file("https://assets.datacamp.com/production/course_2399/datasets/mortgage-sample.csv",
+              destfile="mortgage-sample.csv",
+              method="libcurl")
+
+# Load the bigmemory package
+library(bigmemory)
+
+# Create the big.matrix object: x
+x <- read.big.matrix("mortgage-sample.csv", header = TRUE, 
+                     type = "integer", 
+                     backingfile = "mortgage-sample.bin", 
+                     descriptorfile = "mortgage-sample.desc")
+    
+# Find the dimensions of x
+dim(x)
+```
+
+```{r}
+# Attach mortgage-sample.desc
+mort <- attach.big.matrix("mortgage-sample.desc")
+
+# Find the dimensions of mort
+dim(mort)
+
+# Look at the first 6 rows of mort
+head(mort)
+```
+
+```{r}
+# Create mort
+mort <- mort <- attach.big.matrix("mortgage-sample.desc")
+
+# Look at the first 3 rows
+mort[1:3, ]
+
+# Create a table of the number of mortgages for each year in the data set
+table(mort[,15])
+```
+
+```{r}
+# Load the biganalytics package
+#install.packages("biganalytics")
+library(biganalytics)
+
+# Get the column means of mort
+colmean(mort)
+
+# Use biganalytics' summary function to get a summary of the data
+summary(mort)
+```
+
+```{r}
+# Use deepcopy() to create first_three
+first_three <- deepcopy(mort, cols = 1:3, 
+                        backingfile = "first_three.bin", 
+                        descriptorfile = "first_three.desc")
+
+# Set first_three_2 equal to first_three
+first_three_2 <- first_three
+
+# Set the value in the first row and first column of first_three to NA
+first_three[1, 1] <- NA
+
+# Verify the change shows up in first_three_2
+first_three_2[1, 1]
+
+# but not in mort
+mort[1, 1]
+```
+

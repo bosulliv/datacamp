@@ -1,0 +1,17 @@
+*.bz2
+*.Rhistory
+*.RData
+*.Ruserdata
+*.nb.html
+*.Rproj.user
+*.Rproj
+*.Rproj.user
+.ipynb_checkpoints
+*.html
+.DS_Store
+*.css
+.Rproj.user
+*.log
+*logs
+*.desc
+*.bin
