@@ -159,12 +159,12 @@ DT
 DT <- data.table(a = letters[c(1, 1, 1, 2, 2)], b = 1)
 
 # Add a suffix "_2" to all column names
-
+setnames(DT, names(DT), paste0(names(DT), "_2"))
 
 # Change column name "a_2" to "A2"
-
+setnames(DT, "a_2", "A2")
 
 # Reverse the order of the columns
-
+setcolorder(DT, rev(names(DT)))
 ```
 
