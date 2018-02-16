@@ -1,0 +1,84 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Chapter 4
+
+```{r}
+install.packages("rvest"")
+```
+
+```{r}
+# Load rvest
+library(rvest)
+
+# Hadley Wickham's Wikipedia page
+test_url <- "https://en.wikipedia.org/wiki/Hadley_Wickham"
+
+# Read the URL stored as "test_url" with read_html()
+test_xml <- read_html(test_url)
+
+# Print test_xml
+test_xml
+```
+
+```{r}
+# data prep
+test_node_xpath <- "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"vcard\", \" \" ))]"
+
+# Use html_node() to grab the node with the XPATH stored as `test_node_xpath`
+node <- html_node(x = test_xml, xpath = test_node_xpath)
+
+# Print the first element of the result
+node[1]
+```
+
+```{r}
+# data prep
+table_element <- node
+
+# Extract the name of table_element
+element_name <- html_name(table_element)
+
+# Print the name
+element_name
+```
+
+```{r}
+# data prep
+second_xpath_val <- "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"fn\", \" \" ))]"
+
+# Extract the element of table_element referred to by second_xpath_val and store it as page_name
+page_name <- html_node(x = table_element, xpath = second_xpath_val)
+
+# Extract the text from page_name
+page_title <- html_text(page_name)
+
+# Print page_title
+page_title
+```
+
+```{r}
+# Turn table_element into a data frame and assign it to wiki_table
+wiki_table <- html_table(table_element)
+
+# Print wiki_table
+wiki_table
+```
+
+```{r}
+# Rename the columns of wiki_table
+colnames(wiki_table) <- c("key", "value")
+
+# Remove the empty row from wiki_table
+cleaned_table <- subset(wiki_table, !key == "")
+
+# Print cleaned_table
+cleaned_table
+```
+
+
+
+
+
