@@ -103,3 +103,92 @@ eu %>%
   select(ip_prefix)
 ```
 
+```{r}
+# data prep
+url <- "https://en.wikipedia.org/w/api.php?action=query&titles=Hadley%20Wickham&prop=revisions&rvprop=timestamp%7Cuser%7Ccomment%7Ccontent&rvlimit=5&format=xml&rvdir=newer&rvstart=2015-01-14T17%3A12%3A45Z&rvsection=0"
+resp_xml <- GET(url)
+
+# Load xml2
+library(xml2)
+
+# Get XML revision history
+#resp_xml <- rev_history("Hadley Wickham", format = "xml")
+
+# Check response is XML 
+http_type(resp_xml)
+
+# Examine returned text with content()
+rev_text <- content(resp_xml, as = "text")
+rev_text
+
+# Turn rev_text into an XML document
+rev_xml <- read_xml(rev_text)
+
+# Examine the structure of rev_xml
+xml_structure(rev_xml)
+```
+
+```{r}
+# Find all nodes using XPATH "/api/query/pages/page/revisions/rev"
+xml_find_all(rev_xml, "/api/query/pages/page/revisions/rev")
+
+# Find all rev nodes anywhere in document
+rev_nodes <- xml_find_all(rev_xml, "//rev")
+
+# Use xml_text() to get text from rev_nodes
+xml_text(rev_nodes)
+```
+
+```{r}
+# All rev nodes
+rev_nodes <- xml_find_all(rev_xml, "//rev")
+
+# The first rev node
+first_rev_node <- xml_find_first(rev_xml, "//rev")
+
+# Find all attributes with xml_attrs()
+xml_attrs(first_rev_node)
+
+# Find user attribute with xml_attr()
+xml_attr(first_rev_node, "user")
+
+# Find user attribute for all rev nodes
+xml_attr(rev_nodes, "user")
+
+# Find anon attribute for all rev nodes
+xml_attr(rev_nodes, "anon")
+```
+
+```{r}
+get_revision_history <- function(article_title){
+  # Get raw revision response
+  #rev_resp <- rev_history(article_title, format = "xml")
+  url <- "https://en.wikipedia.org/w/api.php?action=query&titles=Hadley%20Wickham&prop=revisions&rvprop=timestamp%7Cuser%7Ccomment%7Ccontent&rvlimit=5&format=xml&rvdir=newer&rvstart=2015-01-14T17%3A12%3A45Z&rvsection=0"
+  rev_resp <- GET(url)
+  
+  # Turn the content() of rev_resp into XML
+  rev_xml <- read_xml(content(rev_resp, "text"))
+  
+  # Find revision nodes
+  rev_nodes <- xml_find_all(rev_xml, "//rev")
+
+  # Parse out usernames
+  user <- xml_attr(rev_nodes, "user")
+  
+  # Parse out timestamps
+  timestamp <- readr::parse_datetime(xml_attr(rev_nodes, "timestamp"))
+  
+  # Parse out content
+  content <- xml_text(rev_nodes)
+  
+  # Return data frame 
+  data.frame(user = user,
+    timestamp = timestamp,
+    content = substr(content, 1, 40))
+}
+
+# Call function for "Hadley Wickham"
+get_revision_history(article_title = "Hadley Wickham")
+```
+
+
