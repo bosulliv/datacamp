@@ -1,0 +1,145 @@
+---
+title: "Chapter 1"
+output: html_notebook
+---
+
+Whoop whoop - a new R course: Much as I love coding in Python, RStudio is such a nice environment to explore - stronger than Jupyter for iterative data analysis.
+
+```{r}
+require(tidyverse)
+```
+
+```{r}
+clvData1 <- read_csv('https://assets.datacamp.com/production/repositories/1861/datasets/4c612c0c990fccbd16c695043096aafbb66bd266/clvData1.csv')
+```
+
+```{r}
+glimpse(clvData1)
+```
+
+```{r}
+#install.packages("corrplot")
+require(corrplot)
+clvData1 %>%
+  select(nOrders, nItems, daysSinceLastOrder, margin, returnRatio, shareOwnBrand,
+         shareVoucher, shareSale, age, marginPerOrder, marginPerItem, itemsPerOrder, futureMargin) %>%
+  cor() %>%
+  corrplot()
+```
+
+```{r}
+# data prep
+salesData <- read_csv('https://assets.datacamp.com/production/course_6027/datasets/salesData.csv')
+```
+
+
+```{r}
+# Structure of dataset
+str(salesData, give.attr = FALSE)
+
+# Visualization of correlations
+salesData %>% select_if(is.numeric) %>%
+  select(-id) %>%
+  cor() %>%
+  corrplot()
+
+# Frequent stores
+ggplot(salesData) +
+    geom_boxplot(aes(x = mostFreqStore, y = salesThisMon))
+
+# Preferred brand
+ggplot(salesData) +
+    geom_boxplot(aes(x = preferredBrand, y = salesThisMon))
+```
+
+```{r}
+ggplot(clvData1, aes(margin, futureMargin)) +
+  geom_point() +
+  geom_smooth(method=lm, se=FALSE) +
+  xlab("Margin year 1") +
+  ylab("Margin year 2")
+```
+
+```{r}
+# Model specification using lm
+salesSimpleModel <- lm(salesThisMon ~ salesLast3Mon, 
+                       data = salesData)
+
+# Looking at model summary
+summary(salesSimpleModel)
+
+ggplot(salesData, aes(x=salesLast3Mon, y=salesThisMon)) +
+  geom_point() +
+  geom_smooth(method=lm, se=FALSE) +
+  xlab("salesLast3Mon") +
+  ylab("salesThisMon")
+```
+
+R squared can be worded as this explains 60% of the variation in the sales of this month. i.e. it's 40% distant/wrong!
+
+```{r}
+# what about a linear model on all the variables
+multipleLM <- lm(futureMargin ~ ., data=clvData1)
+
+summary(multipleLM)
+```
+
+But colinearity creates unstable co-efficients. e.g. nOrders and nItems are closely correlated.
+
+```{r}
+install.packages("rms")
+library(rms)
+vif(multipleLM)
+```
+
+Coefficients above 5 are colinear, and you should pick one and remove the other(s). Let's do that with nItems
+
+```{r}
+# data prep
+cat(colnames(clvData1), sep=' + ')
+```
+
+```{r}
+# what about a linear model on all the variables
+multipleLM <- lm(futureMargin ~ nOrders + daysSinceLastOrder + margin +
+                   returnRatio + shareOwnBrand + shareVoucher + shareSale + gender +
+                   age + marginPerOrder + marginPerItem + itemsPerOrder, data=clvData1)
+
+summary(multipleLM)
+```
+
+```{r}
+# Estimating the full model
+salesModel1 <- lm(salesThisMon ~ . - id, 
+                 data = salesData)
+
+# Checking variance inflation factors
+vif(salesModel1)
+
+# Estimating new model by removing information on brand
+salesModel2 <- lm(salesThisMon ~ . - id - preferredBrand - nBrands, 
+                 data = salesData)
+
+# Checking variance inflation factors
+vif(salesModel2)
+```
+
+```{r}
+salesData2_4 <- read_csv('https://assets.datacamp.com/production/course_6027/datasets/salesDataMon2To4.csv')
+```
+
+```{r}
+
+# getting an overview of new data
+summary(salesData2_4)
+
+# predicting sales
+predSales5 <- predict(salesModel2, newdata = salesData2_4)
+
+# calculating mean of future sales
+mean(predSales5)
+
+```
+
+
+
