@@ -129,7 +129,6 @@ salesData2_4 <- read_csv('https://assets.datacamp.com/production/course_6027/dat
 ```
 
 ```{r}
-
 # getting an overview of new data
 summary(salesData2_4)
 
@@ -138,7 +137,6 @@ predSales5 <- predict(salesModel2, newdata = salesData2_4)
 
 # calculating mean of future sales
 mean(predSales5)
-
 ```
 
 
