@@ -1,0 +1,144 @@
+---
+title: "Chapter 4"
+output: html_notebook
+---
+
+```{r}
+require(tidyverse)
+```
+
+Whoop, whoop: Survival analysis: I need this for a current project.
+
+Add a churn binary to ltv - tenure can remain the measure of time now, but churn=1 if end_date is less than now(). Then I need to use survival analysis to calculate recent tenure values.
+
+```{r}
+# data prep
+data <- read_csv("https://assets.datacamp.com/production/course_6027/datasets/survivalDataExercise.csv")
+dataNextOrder <- data[c("daysSinceFirstPurch", "boughtAgain")]
+glimpse(dataNextOrder)
+```
+
+
+```{r}
+# Look at the head of the data
+head(dataNextOrder)
+
+# Plot a histogram
+ggplot(dataNextOrder) +
+  geom_histogram(aes(x = daysSinceFirstPurch,
+                     fill = factor(boughtAgain))) +
+  facet_grid( ~ boughtAgain) + # Separate plots for boughtAgain = 1 vs. 0
+  theme(legend.position = "none") # Don't show legend
+```
+
+### Survival Curve Analaysis = Kaplan Meier
+*Survival function* - probability of 'death' versus time
+*Hazard function* - the d/dt of a survival function. The peak is the highest occurence of 'deaths'
+
+```{r}
+# data prep
+install.packages("survivql")
+require(survival)
+dataNextOrders <- data[c("daysSinceFirstPurch", "shoppingCartValue", "gender",
+                         "voucher", "returned", "boughtAgain")]
+
+# Create survival object
+survObj <- Surv(dataNextOrder$daysSinceFirstPurch, dataNextOrder$boughtAgain)
+
+# Look at structure
+str(survObj)
+```
+
+```{r}
+# data prep
+dataNextOrder <- data[c("daysSinceFirstPurch", "shoppingCartValue", "gender",
+                        "voucher", "returned", "boughtAgain")]
+
+# Compute and print fit
+fitKMSimple <- survfit(survObj ~ 1)
+print(fitKMSimple)
+
+# Plot fit
+plot(fitKMSimple,
+     conf.int = FALSE, xlab = "Time since first purchase",
+     ylab = "Survival function", main = "Survival function")
+
+# Compute fit with categorical covariate
+fitKMCov <- survfit(survObj ~ voucher, data = dataNextOrder)
+
+# Plot fit with covariate and add labels
+plot(fitKMCov, lty = 2:3,
+     xlab = "Time since first purchase", ylab = "Survival function", 
+     main = "Survival function")
+legend(90, .9, c("No", "Yes"), lty = 2:3)
+```
+
+### Cox Proportional Hazards
+
+```{r}
+library(rms)
+
+# Determine distributions of predictor variables
+dd <- datadist(dataNextOrder)
+options(datadist = "dd")
+
+# Compute Cox PH Model and print results
+fitCPH <- cph(Surv(daysSinceFirstPurch, boughtAgain) ~ shoppingCartValue + voucher + returned + gender,
+              data = dataNextOrder,
+              x = TRUE, y = TRUE, surv = TRUE)
+print(fitCPH)
+
+# Interpret coefficients
+print(exp(fitCPH$coefficients))
+
+# Plot result summary
+plot(summary(fitCPH), log = TRUE)
+```
+
+### Check model assumptions and make predictions
+```{r}
+# Check proportional hazard assumption and print result
+testCPH <- cox.zph(fitCPH)
+print(testCPH)
+
+# Plot time-dependent beta
+plot(testCPH, var = "gender=male")
+
+# Load rms package
+library(rms)
+
+# Validate model
+validate(fitCPH, method = "crossvalidation",
+         B = 10, dxy = TRUE, pr = FALSE)
+```
+
+The R2 is the item to check here - and it is very poor: 0.03 - that's effectively useless at describing churn time with those variables. It needs more data - on our side intuition requires customer support tickets with a measure of unhappiness and perhaps external knowledge of searching for new services. i.e. we see it as a lead aggregator.
+
+```{r}
+# Create data with new customer
+newCustomer <- data.frame(daysSinceFirstPurch = 21,
+                  shoppingCartValue = 99.9,
+                  gender = "female", 
+                  voucher = 1,
+                  returned = 0,
+                  stringsAsFactors = FALSE)
+
+# Make predictions
+pred <- survfit(fitCPH, newdata = newCustomer)
+print(pred)
+plot(pred)
+
+# Correct the customer's gender
+newCustomer2 <- newCustomer
+newCustomer2$gender <- "male"
+
+# Redo prediction
+pred2 <- survfit(fitCPH, newdata = newCustomer2)
+print(pred2)
+```
+
+
+
+
+
+
