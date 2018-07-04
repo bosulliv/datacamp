@@ -1,0 +1,88 @@
+---
+title: "Chapter 4"
+output: html_notebook
+---
+
+# Chapter 4: PCA
+
+```{r}
+# data prep
+library(tidyverse)
+library(corrplot)
+load(url("https://assets.datacamp.com/production/repositories/1861/datasets/f91399541c79294165bb8a028db694850f21724c/newsData.RData"))
+
+raw <- newsData
+newsData <- raw[c("n_tokens_title", "n_tokens_content", "n_unique_tokens", "num_hrefs", "num_self_hrefs",
+                  "num_imgs", "num_videos", "num_keywords", "is_weekend", "kw_avg_min", "kw_avg_avg",
+                  "kw_avg_max", "average_token_length", "global_subjectivity", "global_sentiment_polarity",
+                  "global_rate_positive_words", "global_rate_negative_words", "avg_positive_polarity",
+                  "avg_negative_polarity", "title_subjectivity", "title_sentiment_polarity")]
+
+# Overview of data structure:
+str(newsData, give.attr = FALSE)
+
+# Correlation structure:
+newsData %>% cor() %>% corrplot()
+```
+
+```{r}
+# Standardize data
+newsData <- newsData %>% scale() %>% as.data.frame()
+
+# Compute PCA
+pcaNews <- newsData %>% prcomp()
+
+# Eigenvalues - are the variance = std_dev ^ 2
+pcaNews$sdev ^ 2
+```
+
+```{r}
+# Screeplot:
+screeplot(pcaNews)
+
+# Cumulative explained variance:
+summary(pcaNews)
+
+# Kaiser-Guttmann (number of components with eigenvalue larger than 1):
+sum(pcaNews$sdev^2 > 1.0)
+```
+
+```{r}
+# Print loadings of the first six components
+ pcaNews$rotation[, 1:6] %>% round(2)
+```
+
+```{r}
+biplot(pcaNews, choice=1:2, cex = 0.5)
+```
+
+## PCA in regression analysis
+
+```{r}
+# data prep
+newsData <- raw[c("n_tokens_title", "n_tokens_content", "n_unique_tokens", "num_hrefs", "num_self_hrefs",
+                  "num_imgs", "num_videos", "num_keywords", "is_weekend", "kw_avg_min", "kw_avg_avg",
+                  "kw_avg_max", "average_token_length", "global_subjectivity", "global_sentiment_polarity",
+                  "global_rate_positive_words", "global_rate_negative_words", "avg_positive_polarity",
+                  "avg_negative_polarity", "title_subjectivity", "title_sentiment_polarity", "shares")]
+newsData$logShares <- log(newsData$shares)
+newsData <- subset(newsData, select=-shares)
+
+# Predict log shares with all original variables
+mod1 <- lm(logShares ~ ., data = newsData)
+
+# Create dataframe with log shares and first 6 components
+dataNewsComponents <- cbind(logShares = newsData[, "logShares"],
+                            pcaNews$x[, 1:6]) %>%
+  as.data.frame()
+
+# Predict log shares with first six components
+mod2 <- lm(logShares ~ ., data = dataNewsComponents)
+
+# Print adjusted R squared for both models
+summary(mod1)$adj.r.squared
+summary(mod2)$adj.r.squared
+```
+
+
+
