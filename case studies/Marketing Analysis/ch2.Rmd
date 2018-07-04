@@ -1,0 +1,44 @@
+---
+title: "Chapter 2"
+output: html_notebook
+---
+
+## Churn Prevention
+Using logistic regression.
+
+```{r}
+rm(list=ls())
+require(tidyverse)
+require(rms)
+require(corrplot)
+
+churnData <- read_csv('https://assets.datacamp.com/production/course_6027/datasets/churn_data.csv')
+
+# drop first column
+churnData <- subset(churnData, select=-X1)
+```
+
+```{r}
+ggplot(churnData, aes(x=returnCustomer)) +
+  geom_histogram(stat="count")
+```
+
+```{r}
+# data prep
+defaultData <- read_delim('https://assets.datacamp.com/production/repositories/1861/datasets/0b0772985a8676c3613e8ac2c6053f5e60a3aebd/defaultData.csv', delim=';')
+```
+
+
+```{r}
+# Summary of data
+summary(defaultData)
+
+# Look at data structure
+str(defaultData)
+
+# Analyze the balancedness of dependent variable
+ggplot(defaultData, aes(x = PaymentDefault)) +
+  geom_histogram(stat = "count") 
+```
+
+
