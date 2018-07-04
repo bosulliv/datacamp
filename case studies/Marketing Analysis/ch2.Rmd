@@ -41,4 +41,143 @@ ggplot(defaultData, aes(x = PaymentDefault)) +
   geom_histogram(stat = "count") 
 ```
 
+```{r}
+require(MASS)
+```
+
+```{r}
+# Build logistic regression model
+logitModelFull <- glm(PaymentDefault ~ limitBal + sex + education + marriage +
+                   age + pay1 + pay2 + pay3 + pay4 + pay5 + pay6 + billAmt1 + 
+                   billAmt2 + billAmt3 + billAmt4 + billAmt5 + billAmt6 + payAmt1 + 
+                   payAmt2 + payAmt3 + payAmt4 + payAmt5 + payAmt6, 
+                family = binomial, data = defaultData)
+
+# Take a look at the model
+summary(logitModelFull)
+
+# Take a look at the odds
+coefsexp <- coef(logitModelFull) %>% exp() %>% round(2)
+coefsexp
+```
+
+```{r}
+library(MASS)
+# The old (full) model
+logitModelFull <- glm(PaymentDefault ~ limitBal + sex + education + marriage +
+                   age + pay1 + pay2 + pay3 + pay4 + pay5 + pay6 + billAmt1 + 
+                   billAmt2 + billAmt3 + billAmt4 + billAmt5 + billAmt6 + payAmt1 + 
+                   payAmt2 + payAmt3 + payAmt4 + payAmt5 + payAmt6, 
+                 family = binomial, defaultData)
+
+#Build the new model
+logitModelNew <- stepAIC(logitModelFull, trace=0) 
+
+#Look at the model
+summary(logitModelNew) 
+
+# Save the formula of the new model (it will be needed for the out-of-sample part) 
+formulaLogit <- as.formula(summary(logitModelNew)$call)
+formulaLogit
+```
+
+```{r}
+install.packages("descr")
+library(descr)
+
+install.packages('SDMTools')
+library(SDMTools)
+```
+
+```{r}
+# Make predictions using the full Model
+defaultData$predFull <- predict(logitModelFull,
+                                type = 'response',
+                                na.action = na.exclude)
+
+# Construct the in-sample confusion matrix
+confMatrixModelFull <- confusion.matrix(defaultData$PaymentDefault,
+                                        defaultData$predFull,
+                                        threshold = 0.5)
+confMatrixModelFull
+
+# Calculate the accuracy for the full Model
+accuracyFull <- sum(diag(confMatrixModelFull)) / sum(confMatrixModelFull)
+accuracyFull
+```
+
+```{r}
+# Calculate the accuracy for 'logitModelNew'
+# Make prediction
+defaultData$predNew <- predict(logitModelNew, type = "response", na.action = exclude.na)
+
+# Construct the in-sample confusion matrix
+confMatrixModelNew <- confusion.matrix(defaultData$PaymentDefault,
+                                       defaultData$predNew,
+                                       threshold = 0.5)
+confMatrixModelNew
+
+# Calculate the accuracy...
+accuracyNew <- sum(diag(confMatrixModelNew)) / sum(confMatrixModelNew)
+accuracyNew
+
+# and compare it to the full model's accuracy
+accuracyFull
+```
+
+```{r}
+library(SDMTools)
+# Prepare data frame with threshold values and empty payoff column
+payoffMatrix <- data.frame(threshold = seq(from = 0.1, to = 0.5, by = 0.1),
+                           payoff = NA) 
+payoffMatrix 
+ 
+for(i in 1:length(payoffMatrix$threshold)) {
+  # Calculate confusion matrix with varying threshold
+  confMatrix <- confusion.matrix(defaultData$PaymentDefault,
+                defaultData$predNew, 
+                threshold = payoffMatrix$threshold[i])
+  # Calculate payoff and save it to the corresponding row
+  payoffMatrix$payoff[i] <- confMatrix[1,1]*250 + confMatrix[1,2]*(-1000)
+}
+payoffMatrix
+```
+
+```{r}
+library(boot)
+
+# Split data in train and test set
+set.seed(534381) 
+defaultData$isTrain <- rbinom(nrow(defaultData), 1, 0.66)
+train <- subset(defaultData, isTrain == 1)
+test <- subset(defaultData, isTrain  == 0)
+
+logitTrainNew <- glm(formulaLogit, family = binomial, data = train) # Modeling
+test$predNew <- predict(logitTrainNew, type = "response", newdata = test) # Predictions
+
+# Out-of-sample confusion matrix and accuracy
+confMatrixModelNew <- confusion.matrix(test$PaymentDefault, test$predNew, threshold = 0.3) 
+sum(diag(confMatrixModelNew)) / sum(confMatrixModelNew) # Compare this value to the in-sample accuracy
+```
+
+```{r}
+library(boot)
+# Accuracy function
+costAcc <- function(r, pi = 0) {
+  cm <- confusion.matrix(r, pi, threshold = 0.3)
+  acc <- sum(diag(cm)) / sum(cm)
+  return(acc)
+}
+
+# Cross validated accuracy for logitModelNew
+set.seed(534381)
+cv.glm(defaultData, logitModelNew, cost = costAcc, K = 6)$delta[1]
+```
+
+
+
+
+
+
+
 
