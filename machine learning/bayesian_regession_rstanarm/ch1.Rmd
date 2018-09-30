@@ -1,0 +1,70 @@
+---
+title: "Chapter 1"
+output: html_notebook
+---
+
+datacamp bayesian regression course with STAN.
+
+```{r}
+install.packages("rstanarm")
+install.packages('nloptr')
+install.packages("tidyverse")
+```
+
+
+
+```{r}
+require(broom)
+require(rstanarm)
+require(readr)
+```
+
+Data prep - load song data... if I can remember the R after months of Python!
+
+```{r}
+songs <- read_csv('https://assets.datacamp.com/production/repositories/2199/datasets/3c921f85674c92085b3428c303b9364573a8bd4f/datacamp-spotify-data.csv')
+```
+
+```{r}
+# Print the first 6 rows
+head(songs)
+
+# Print the structure
+str(songs)
+```
+
+```{r}
+# Create the model here
+lm_model <- lm(popularity ~ song_age, data = songs)
+
+# Produce the summary
+summary(lm_model)
+
+# Print a tidy summary of the coefficients
+tidy(lm_model)
+```
+
+```{r}
+# Create the model here
+stan_model <- stan_glm(popularity ~ song_age, data = songs)
+
+# Produce the summary
+summary(stan_model)
+
+# Print a tidy summary of the coefficients
+tidy(stan_model)
+```
+
+```{r}
+# Create the 90% credible intervals
+posterior_interval(stan_model)
+
+# Create the 95% credible intervals
+posterior_interval(stan_model, prob = 0.95)
+
+# Create the 80% credible intervals
+posterior_interval(stan_model, prob = 0.8)
+```
+
+
+
