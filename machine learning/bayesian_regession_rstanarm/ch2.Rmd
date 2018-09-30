@@ -1,0 +1,122 @@
+---
+title: "Chapter 2"
+output: html_notebook
+---
+
+
+```{r}
+require(readr)
+require(rstanarm)
+require(broom)
+```
+
+```{r}
+songs <- read_csv('https://assets.datacamp.com/production/repositories/2199/datasets/3c921f85674c92085b3428c303b9364573a8bd4f/datacamp-spotify-data.csv')
+```
+
+```{r}
+# 3 chains, 1000 iterations, 500 warmup
+model_3chains <- stan_glm(popularity ~ song_age, data = songs,
+    chains = 3, iter = 1000, warmup = 500)
+
+# Print a summary of model_3chains
+summary(model_3chains)
+
+# 2 chains, 100 iterations, 50 warmup
+model_2chains <- stan_glm(popularity ~ song_age, data = songs,
+    chains = 2, iter = 100, warmup = 50)
+
+# Print a summary of model_1chain
+summary(model_2chains)
+```
+
+Notice r_hat is above 1.1 in the 2 chain, short iteration model: It's too short to converge, and we see warnings to that effect.
+
+```{r}
+# intercept prior adjustment
+sd(songs$popularity) * 100
+
+# coefficients adjustment
+2.5 / sd(songs$song_age) * sd(songs$popularity)
+```
+
+
+
+```{r}
+# Estimate the model
+stan_model <- stan_glm(popularity ~ song_age, data = songs)
+
+# Print a summary of the prior distributions
+prior_summary(stan_model)
+```
+
+```{r}
+# Calculate the adjusted scale for the intercept
+10 * sd(songs$popularity)
+
+# Calculate the adjusted scale for `song_age`
+(2.5 / sd(songs$song_age)) * sd(songs$popularity)
+
+# Calculate the adjusted scale for `valence`
+(2.5 / sd(songs$valence)) * sd(songs$popularity)
+```
+
+```{r}
+# Estimate the model with unadjusted scales
+no_scale <- stan_glm(popularity ~ song_age, data = songs,
+    prior_intercept = normal(autoscale = FALSE),
+    prior = normal(autoscale = FALSE),
+    prior_aux = exponential(autoscale = FALSE)
+)
+
+# Print the prior summary
+prior_summary(no_scale)
+```
+
+```{r}
+# hmm - can't predict with no adjustment!
+summary(no_scale)
+```
+
+```{r}
+# Estimate a model with flat priors
+flat_prior <- stan_glm(popularity ~ song_age, data = songs,
+    prior_intercept = NULL, prior = NULL, prior_aux = NULL)
+
+# Print a prior summary
+prior_summary(flat_prior)
+
+summary(flat_prior)
+```
+
+```{r}
+# Estimate the model with an informative prior
+inform_prior <- stan_glm(popularity ~ song_age, data = songs,
+    prior = normal(location = 20, scale = 0.1, autoscale = FALSE))
+
+# Print the prior summary
+prior_summary(inform_prior)
+
+summary(inform_prior)
+```
+
+```{r}
+# Estimate the model with a new `adapt_delta`
+adapt_model <- stan_glm(popularity ~ song_age, data = songs,
+  control = list(adapt_delta = 0.99))
+
+# View summary
+summary(adapt_model)
+
+# Estimate the model with a new `max_treedepth`
+tree_model <- stan_glm(popularity ~ song_age, data = songs,
+  control = list(max_treedepth = 15))
+
+# View summary
+summary(tree_model)
+```
+
+
+
+
+
