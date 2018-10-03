@@ -1,0 +1,134 @@
+---
+title: "Chapter 4"
+output: html_notebook
+---
+
+
+```{r}
+require(rstanarm)
+require(loo)
+require(tidyverse)
+require(broom)
+require(readr)
+require(tidybayes)
+require(ggplot2)
+```
+
+```{r}
+# data prep
+songs <- read_csv('./songs.csv')
+stan_model <- stan_glm(popularity ~ song_age, data=songs)
+```
+
+
+```{r}
+# Save the model parameters
+tidy_coef <- tidy(stan_model)
+
+# Extract intercept and slope
+model_intercept <- tidy_coef$estimate[1]
+model_slope <- tidy_coef$estimate[2]
+
+# Create the plot
+ggplot(songs, aes(x = song_age, y = popularity)) +
+  geom_point() +
+  geom_abline(intercept = model_intercept, slope = model_slope)
+```
+
+```{r}
+#install.packages("tidybayes")
+require(tidybayes)
+
+# Save the values from each draw of the posterior distribution
+draws <- spread_draws(stan_model, `(Intercept)`, `song_age`)
+
+# Create the plot
+ggplot(songs, aes(x = song_age, y = popularity)) +
+  geom_point()
+```
+
+```{r}
+# Save the values from each draw of the posterior distribution
+draws <- spread_draws(stan_model, `(Intercept)`, `song_age`)
+
+# Create the plot
+ggplot(songs, aes(x = song_age, y = popularity)) +
+	geom_point() +
+	geom_abline(data = draws, aes(intercept = `(Intercept)`, slope = song_age),
+                size = 0.1, alpha = 0.1, color = "skyblue") +
+	geom_abline(intercept = model_intercept, slope = model_slope)
+```
+
+## Making Predictions
+```{r}
+# Estimate the regression model
+stan_model <- stan_glm(popularity ~ song_age + artist_name, data = songs)
+
+# Print the model summary
+summary(stan_model)
+
+# Get posteriors of predicted scores for each observation
+posteriors <- posterior_predict(stan_model)
+
+# Print 10 predicted scores for 5 songs
+posteriors[1:10, 1:5]
+```
+
+Produce a popularity prediction for Beyonce, from an album that is 663 days old:
+
+```{r}
+# Create data frame of new data
+predict_data <- data.frame(song_age = 663, artist_name = "Beyoncé")
+
+# Create posterior predictions for Lemonade album
+new_predictions <- posterior_predict(stan_model, newdata = predict_data)
+
+# Print first 10 predictions for the new data
+new_predictions[1:10,]
+
+# Print a summary of the posterior distribution of predicted popularity
+summary(new_predictions[, 1])
+```
+
+```{r}
+new_df <- as.data.frame(new_predictions)
+colnames(new_df) <- c("song_age")
+plot_df <- gather(new_df, key="song_age", value = "predict")
+ggplot(plot_df, aes(x=song_age)) +
+  geom_density()
+```
+
+```{r}
+# data prep - let's predict popularity of new songs from 3 artists
+predict_data <- data.frame('song_age' = 0,
+                           'artist_name' = c("Adele", "Taylor Swift", "Beyoncé"))
+new_predictions <- posterior_predict(stan_model, newdata = predict_data)
+```
+
+
+```{r}
+# View new data predictions
+new_predictions[1:10, ]
+
+# Convert to data frame and rename variables
+new_predictions <- as.data.frame(new_predictions)
+colnames(new_predictions) <- c("Adele", "Taylor Swift", "Beyoncé")
+
+# Create tidy data structure
+plot_posterior <- gather(new_predictions, key = "artist_name", value = "predict")
+
+# Print formated data
+head(plot_posterior)
+```
+
+```{r}
+# Create plot of 
+ggplot(plot_posterior, aes(x = predict)) +
+	facet_wrap(~ artist_name, ncol = 1) +
+	geom_density()
+```
+
+
+
+
+
