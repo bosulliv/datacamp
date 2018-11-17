@@ -1,0 +1,39 @@
+---
+title: "Chapter 2"
+output: html_notebook
+---
+
+
+
+```{r}
+# data prep
+require(tidyverse)
+M_df <- read_csv('https://assets.datacamp.com/production/repositories/2654/datasets/6bfadc8a2147bddbbaedafc8e21b8576cb4364ce/WNBA_Data_2017_M.csv')
+M <- as.matrix(M_df)
+print(M)
+
+f_df <- read_csv('https://assets.datacamp.com/production/repositories/2654/datasets/4e20e9adfd6514bd5b1bfb1464cd6da9fbbadfe9/WNBA_Data_2017_f.csv')
+f <- as.matrix(f_df)
+print(f)
+```
+
+```{r}
+# Print the Massey Matrix M Here
+print(M)
+
+# Print the vector of point differentials f here
+print(f)
+
+# Find the sum of the first column 
+sum(M[,1])
+
+# Find the sum of the vector f
+sum(f)
+```
+
+
+
+
+
+
+
