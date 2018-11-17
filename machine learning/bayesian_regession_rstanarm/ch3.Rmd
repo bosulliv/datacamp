@@ -66,4 +66,53 @@ summary(predictions[1,])
 summary(predictions[10,])
 ```
 
+```{r}
+# Calculate the posterior distribution of the R-squared
+r2_posterior <- bayes_R2(stan_model)
+
+# Make a histogram of the distribution
+hist(r2_posterior)
+```
+
+```{r}
+# Create density comparison
+pp_check(stan_model, "dens_overlay")
+
+# Create scatter plot of means and standard deviations
+pp_check(stan_model, "stat_2d")
+```
+
+```{r}
+install.packages("loo")
+require(loo)
+```
+
+```{r}
+require(rstanarm)
+loo(stan_model, cores=8)
+
+# Estimate the model with 1 predictor
+model_1pred <- stan_glm(popularity ~ song_age, data = songs)
+
+# Print the LOO estimate for the 1 predictor model
+loo(model_1pred)
+
+# Estimate the model with both predictors
+model_2pred <- stan_glm(popularity ~ song_age * artist_name, data = songs)
+
+# Print the LOO estimates for the 2 predictor model
+loo(model_2pred)
+```
+
+```{r}
+# positive = second model is better
+# difference is > standard error = even though the model is more complicated, it is worth if for the better result.
+compare(loo(model_1pred), loo(model_2pred))
+```
+
+
+
+
+
+
 
