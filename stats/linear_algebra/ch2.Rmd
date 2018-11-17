@@ -9,8 +9,8 @@ output: html_notebook
 # data prep
 require(tidyverse)
 M_df <- read_csv('https://assets.datacamp.com/production/repositories/2654/datasets/6bfadc8a2147bddbbaedafc8e21b8576cb4364ce/WNBA_Data_2017_M.csv')
-M <- as.matrix(M_df)
-print(M)
+M_inv_ready <- as.matrix(M_df)
+M <- M_inv_ready[1:12, 1:12]
 
 f_df <- read_csv('https://assets.datacamp.com/production/repositories/2654/datasets/4e20e9adfd6514bd5b1bfb1464cd6da9fbbadfe9/WNBA_Data_2017_f.csv')
 f <- as.matrix(f_df)
@@ -25,15 +25,63 @@ print(M)
 print(f)
 
 # Find the sum of the first column 
+
 sum(M[,1])
 
 # Find the sum of the vector f
 sum(f)
 ```
+```{r}
+# Add a row of 1's
+M <- rbind(M, 1)
 
+# Add a column of -1's 
+M <- cbind(M, rep(-1, 13))
 
+# Change the element in the lower-right corner of the matrix M
+M[13, 13] <- 1
 
+# Print M
+print(M)
+```
 
+```{r}
+solve(M)
+```
+
+```{r}
+# Solve for r and rename column
+r <- solve(M)%*%f
+colnames(r) <- "Rating"
+
+# Print r
+print(r)
+```
+
+```{r}
+require(dplyr)
+u <- as.data.frame(r)
+u$Team <- row.names(u)
+arrange(u, desc(Rating))
+```
+
+```{r}
+# data prep
+require(MASS)
+
+# Print M
+print(M)
+
+# Find the rating vector the conventional way
+r <- solve(M)%*%f
+colnames(r) <- "Rating"
+print(r)
+
+# Find the rating vector using ginv
+r <- ginv(M)%*%f
+colnames(r) <- "Rating"
+print(r)
+```
 
 
 
