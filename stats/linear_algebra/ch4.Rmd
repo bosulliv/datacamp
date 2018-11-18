@@ -1,0 +1,15 @@
+---
+title: "Chapter 4"
+output: html_notebook
+---
+
+```{r}
+require(tidyverse)
+
+combine <- read_csv('https://assets.datacamp.com/production/repositories/2654/datasets/760dae913f682ba6b2758207280138662ddedc0d/DataCampCombine.csv')
+```
+
+
+
+
+
