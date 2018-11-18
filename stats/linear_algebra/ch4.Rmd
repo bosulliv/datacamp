@@ -9,7 +9,87 @@ require(tidyverse)
 combine <- read_csv('https://assets.datacamp.com/production/repositories/2654/datasets/760dae913f682ba6b2758207280138662ddedc0d/DataCampCombine.csv')
 ```
 
+```{r}
+# Print the first few observations of the dataset
+head(combine)
 
+# Find the correlation between variables forty and three_cone
+cor(combine$forty, combine$three_cone)
 
+# Find the correlation between variables vertical and broad_jump
+cor(combine$vertical, combine$broad_jump)
+```
+
+```{r}
+# Extract columns 5-12 of combine
+A <- combine[, 5:12]
+
+# Make A into a matrix
+A <- as.matrix(A)
+
+# Subtract the mean of all columns
+A[, 1] <- A[, 1] - mean(A[, 1])
+A[, 2] <- A[, 2] - mean(A[, 2])
+A[, 3] <- A[, 3] - mean(A[, 3])
+A[, 4] <- A[, 4] - mean(A[, 4])
+A[, 5] <- A[, 5] - mean(A[, 5])
+A[, 6] <- A[, 6] - mean(A[, 6])
+A[, 7] <- A[, 7] - mean(A[, 7])
+A[, 8] <- A[, 8] - mean(A[, 8])
+```
+
+```{r}
+# Create matrix B from equation in instructions
+B <- t(A)%*%A/(nrow(A) - 1)
+
+# Compare 1st element of B to 1st column of variance of A
+B[1,1]
+var(A[, 1])
+
+# Compare 1st element of 2nd column and row element of B to 1st and 2nd columns of A 
+B[1, 2]
+B[2, 1]
+cov(A[, 1], A[, 2])
+```
+
+```{r}
+# Find eigenvalues of B
+V <- eigen(B)
+
+# Print eigenvalues
+V$values
+```
+
+See how the first eigen pair describes almost all of the variance.
+
+```{r}
+pca <- prcomp(A)
+summary(pca)
+```
+
+```{r}
+# Scale columns 5-12 of combine
+B <- scale(combine[, 5:12])
+
+# Print the first few rows of the data
+head(B)
+
+# Summarize the principal component analysis
+summary(prcomp(B))
+```
+
+```{r}
+# Subset combine only to "WR"
+combine_WR <- subset(combine, position == "WR")
+
+# Scale columns 5-12 of combine_WR
+B <- scale(combine_WR[, 5:12])
+
+# Print the first few rows of the data
+head(B)
+
+# Summarize the principal component analysis
+summary(prcomp(B))
+```
 
 
