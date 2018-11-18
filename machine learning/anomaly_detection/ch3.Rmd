@@ -1,0 +1,122 @@
+---
+title: "Chapter 3"
+output: html_notebook
+---
+
+Isolation trees
+
+```{r}
+install.packages("devtools")
+require(devtools)
+```
+
+```{r}
+devtools::install_github("Zelazny7/isofor")
+require(isofor)
+```
+
+```{r}
+require(readr)
+wine_df <- read_csv('wineQualityReds.csv')
+head(wine_df)
+wine <- subset(wine, select=c('pH', 'alcohol'))
+head(wine)
+```
+
+```{r}
+# Build an isolation tree 
+wine_tree <- iForest(wine, nt = 1)
+
+# Create isolation score
+wine$tree_score <- predict(wine_tree, newdata = wine)
+
+# Histogram plot of the scores
+hist(wine$tree_score)
+```
+
+```{r}
+# Fit isolation forest
+wine_forest <- iForest(wine, nt = 100, phi = 200)
+
+# Create isolation score from forest
+wine_score <- predict(wine_forest, newdata=wine)
+
+# Append score to the wine data
+wine$score <- wine_score
+```
+
+```{r}
+# data prep
+wine_scores <- data.frame(1:1599)
+wine_forest <- iForest(wine, nt = 10, phi = 200)
+wine_score <- predict(wine_forest, newdata=wine)
+wine_scores$trees_10 <- wine_score
+
+wine_forest <- iForest(wine, nt = 100, phi = 200)
+wine_score <- predict(wine_forest, newdata=wine)
+wine_scores$trees_100 <- wine_score
+
+wine_forest <- iForest(wine, nt = 200, phi = 200)
+wine_score <- predict(wine_forest, newdata=wine)
+wine_scores$trees_200 <- wine_score
+
+wine_forest <- iForest(wine, nt = 500, phi = 200)
+wine_score <- predict(wine_forest, newdata=wine)
+wine_scores$trees_500 <- wine_score
+
+wine_forest <- iForest(wine, nt = 1000, phi = 200)
+wine_score <- predict(wine_forest, newdata=wine)
+wine_scores$trees_1000 <- wine_score
+
+wine_forest <- iForest(wine, nt = 2000, phi = 200)
+wine_score <- predict(wine_forest, newdata=wine)
+wine_scores$trees_2000 <- wine_score
+```
+
+```{r}
+# View the contents of the wine scores
+head(wine_scores)
+
+# Scatterplot of 2000 trees vs 1000 trees scores
+plot(trees_2000 ~ trees_1000, wine_scores)
+
+# Add reference line of equality
+abline(a = 0, b = 1)
+```
+
+```{r}
+# Sequence of values for pH and alcohol
+ph_seq <- seq(min(wine$pH), max(wine$pH), length.out = 25)
+alcohol_seq <- seq(min(wine$alcohol), max(wine$alcohol) , length.out = 25)
+
+# Create a data frame of grid coordinates
+wine_grid <- expand.grid(pH = ph_seq, alcohol = alcohol_seq)
+
+# Plot the grid
+plot(pH ~ alcohol, wine_grid, pch = 20)
+```
+
+```{r}
+# data prep
+wine_forest = iForest(subset(wine, select=c('pH', 'alcohol')), nt=500, multicore=T)
+
+# Calculate isolation score at grid locations
+wine_grid$score <- predict(wine_forest, newdata=wine_grid)
+```
+
+```{r}
+require(lattice)
+
+# Contour plot of isolation scores
+contourplot(score ~ pH + alcohol, wine_grid, region = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
