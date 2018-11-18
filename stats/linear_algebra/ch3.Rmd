@@ -1,0 +1,86 @@
+---
+title: "Chapter 3"
+output: html_notebook
+---
+
+```{r}
+# data prep
+A <- matrix(c(2,0,0,2/3), nrow=2, ncol=2, byrow=TRUE)
+
+# A is loaded for you
+print(A%*%rep(1, 2))
+```
+
+```{r}
+s <- c(-1,2,4, 0,7,12, 0,0,-4)
+A <- matrix(s, nrow=3, ncol=3, byrow=TRUE)
+
+# Show that 7 is an eigenvalue for A
+A%*%c(0.2425356, 0.9701425, 0) - 7*c(0.2425356, 0.9701425, 0)
+
+# Show that -4 is an eigenvalue for A
+A%*%c(-0.3789810, -0.6821657, 0.6253186) - (-4)*c(-0.3789810, -0.6821657, 0.6253186)
+
+# Show that -1 is an eigenvalue for A
+A%*%c(1,0,0) - (-1)*c(1,0,0)
+```
+
+```{r}
+# Show that double an eigenvector is still an eigenvector
+A%*%((2)*c(0.2425356, 0.9701425, 0)) - 7*(2)*c(0.2425356, 0.9701425, 0)
+
+# Show half of an eigenvector is still an eigenvector
+A%*%((0.5)*c(0.2425356, 0.9701425, 0)) - 7*(0.5)*c(0.2425356, 0.9701425, 0)
+```
+
+```{r}
+A <- matrix(c(1,2,1,1), nrow=2, ncol=2, byrow = TRUE)
+
+# Compute the eigenvalues of A and store in Lambda
+Lambda <- eigen(A)
+
+# Print eigenvalues
+print(Lambda$values[1])
+print(Lambda$values[2])
+
+# Verify that these numbers satisfy the conditions of being an eigenvalue
+det(Lambda$values[1]*diag(2) - A)
+det(Lambda$values[2]*diag(2) - A)
+```
+
+```{r}
+# Find the eigenvectors of A and store them in Lambda
+Lambda <- eigen(A)
+
+# Print eigenvectors
+print(Lambda$vectors[, 1])
+print(Lambda$vectors[, 2])
+
+# Verify that these eigenvectors & their associated eigenvalues satisfy Av - lambda v = 0
+Lambda$values[1]*Lambda$vectors[, 1] - A%*%Lambda$vectors[, 1]
+Lambda$values[2]*Lambda$vectors[, 2] - A%*%Lambda$vectors[, 2]
+```
+
+```{r}
+# data prep
+s <- c(0.98,0.005,0.005,0.005, 
+       0.005,0.98,0.005,0.005,
+       0.005,0.005,0.98,0.005,
+       0.005,0.005,0.005,0.98)
+M <- matrix(s, nrow=4, ncol=4, byrow = FALSE)
+
+# This code iterates mutation 100 times
+x <- c(1, 0, 0, 0)
+for (j in 1:1000) {x <- M%*%x}
+
+# Print x
+print(x)
+
+# Print and scale the first eigenvector of M
+Lambda <- eigen(M)
+v1 <- Lambda$vectors[, 1]/sum(Lambda$vectors[, 1])
+
+print(v1)
+```
+
+
