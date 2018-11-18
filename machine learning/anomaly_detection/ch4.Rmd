@@ -1,0 +1,98 @@
+---
+title: "Chapter 4"
+output: html_notebook
+---
+
+```{r}
+
+```
+
+
+
+```{r}
+# whoop - save df to csv text, then paste to local csv file
+# write.table(thyroid, sep=',', quote=T, row.names=F)
+thyroid <- read_csv('thyroid.csv')
+str(thyroid)
+```
+
+```{r}
+# View contents of thryoid data
+head(thyroid)
+
+# Tabulate the labels
+table(thyroid$label)
+
+# Proportion of thyroid cases
+prop_disease <- 22/1000
+```
+
+```{r}
+# Plot of TSH, T3 and labels
+plot(TSH ~ T3, data = thyroid, pch = 20, col = label + 1)
+```
+
+```{r}
+# Plot of TT4, TBG and labels
+plot(TT4 ~ TBG, data = thyroid, pch = 20, col = label + 1)
+```
+
+```{r}
+library(isofor)
+
+# Fit isolation forest
+thyroid_forest <- iForest(thyroid[,-1], nt = 200, multicore = T)
+
+# Anomaly score 
+thyroid$iso_score <- predict(thyroid_forest, newdata=thyroid[,-1])
+
+# Boxplot of the anomaly score against labels
+boxplot(iso_score ~ label, thyroid, col = "olivedrab4")
+```
+
+```{r}
+library(dbscan)
+thyroid_meas <- thyroid[,-c(1,8)]
+iso_score <- thyroid$iso_score
+
+# Create a LOF score for thyroid
+lof_score <- lof(scale(thyroid_meas), k = 10)
+                 
+# Calculate high threshold for lof_score
+high_lof <- quantile(lof_score, probs = 0.98) 
+
+# Append binary LOF score to thyroid data
+thyroid$binary_lof <- as.numeric(lof_score >= high_lof)
+                 
+# Calculate high threshold for iso_score
+high_iso <- quantile(iso_score, probs = 0.98) 
+
+# Append binary isolation score to thyroid data
+thyroid$binary_iso <- as.numeric(iso_score > high_iso)         
+```
+
+```{r}
+# Tabulate agreement of label and binary isolation score 
+table(thyroid$label, thyroid$binary_iso)
+
+# Tabulate agreement of label and binary LOF score 
+table(thyroid$label, thyroid$binary_lof)
+
+# Proportion of binary_iso and label that agree
+iso_prop <- 11.0/22.0
+
+# Proportion of binary_lof and label that agree
+lof_prop <- 0.0/22.0
+```
+
+
+
+
+
+
+
+
+
+
+
+
