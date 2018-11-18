@@ -79,16 +79,65 @@ table(thyroid$label, thyroid$binary_iso)
 table(thyroid$label, thyroid$binary_lof)
 
 # Proportion of binary_iso and label that agree
-iso_prop <- 11.0/22.0
+iso_prop <- (970+12)/1000
 
 # Proportion of binary_lof and label that agree
-lof_prop <- 0.0/22.0
+lof_prop <- (958+0)/1000
 ```
 
+```{r}
+table(thyroid$label, thyroid$binary_iso)
+table(thyroid$label, thyroid$binary_lof)
 
+# Precision for binary scores
+precision_iso <- 11 / (9 + 11)
+precision_lof <- 0 / (20 + 0)
 
+# Recall for binary scores
+recall_iso <- 11/22
+recall_lof <- 0/22
+```
 
+```{r}
+thyroid <- read_csv('thyroid_cat.csv')
+summary(thyroid)
+```
 
+```{r}
+# Print the column classes in thyroid
+sapply(X = thyroid, FUN = class)
+
+# Convert column with character class to factor
+thyroid$age <- as.factor(thyroid$age)
+thyroid$sex <- as.factor(thyroid$sex)
+
+# Check that all columns are factor or numeric
+sapply(X = thyroid, FUN = class)
+```
+
+```{r}
+# Check the class of age column
+class(thyroid$age)
+
+# Check the class of sex column
+class(thyroid$sex)
+
+# Fit an isolation forest with 100 trees
+thyroid_for <- iForest(thyroid[,-1], nt=100, multicore=T)
+```
+
+```{r}
+require(cluster)
+
+# Calculate Gower's distance matrix
+thyroid_dist <- daisy(thyroid[,-1], metric = 'gower')
+
+# Generate LOF scores for thyroid data
+thyroid_lof <- lof(thyroid_dist, k = 10)
+
+# Range of values in the distance matrix
+range(as.matrix(thyroid_dist))
+```
 
 
 
