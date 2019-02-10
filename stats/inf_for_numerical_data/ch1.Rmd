@@ -1,0 +1,150 @@
+---
+title: "Chapter 1"
+output: html_notebook
+---
+
+```{r}
+install.packages('infer')
+install.packages('tidyverse')
+require(infer)
+require(ggplot2)
+require(tidyverse)
+```
+
+
+```{r}
+require(readr)
+require(dplyr)
+
+manhattan <- read_csv('https://assets.datacamp.com/production/course_5103/datasets/manhattan.csv')
+#transform(manhattan, rent= as.numeric(rent))
+glimpse(manhattan)
+str(manhattan)
+
+```
+
+```{r}
+require(infer)
+require(ggplot2)
+
+# Generate bootstrap distribution of medians
+rent_ci_med <- manhattan %>%
+  # Specify the variable of interest
+  specify(response = 'rent') %>%  
+  # Generate 15000 bootstrap samples
+  generate(reps = 15000, type = "bootstrap") %>% 
+  # Calculate the median of each bootstrap sample
+  calculate(stat = "median")
+
+# View the structure of rent_ci_med
+str(rent_ci_med)
+
+# Plot a histogram of rent_ci_med
+ggplot(rent_ci_med, aes(stat))+
+  geom_histogram(binwidth=50)
+```
+
+```{r}
+# Percentile method
+rent_ci_med %>%
+  summarize(l = quantile(stat, 0.025),
+            u = quantile(stat, 0.975))
+
+# Standard error method
+
+# Calculate observed median
+rent_med_obs <- manhattan %>%
+  # Calculate observed median rent
+  summarize(median(rent)) %>%
+  # Extract numerical value
+  pull()                      
+
+# Determine critical value
+t_star <- qt(0.975, df = nrow(manhattan) - 1)
+
+# Construct interval
+rent_ci_med %>%
+  summarize(boot_se = sd(stat)) %>%
+  summarize(l = rent_med_obs - t_star * boot_se,
+            u = rent_med_obs + t_star * boot_se)
+```
+
+```{r}
+install.packages('openintro')
+require(openintro)
+data(ncbirths)
+
+# Remove NA visits
+ncbirths_complete_visits <- ncbirths %>%
+  filter(!is.na(visits))
+  
+# Generate 15000 bootstrap means
+visit_ci_mean <- ncbirths_complete_visits %>%
+  specify(response = 'visits') %>%
+  generate(reps=15000, type="bootstrap") %>%
+  calculate(stat = 'mean')
+  
+# Calculate the 90% CI via percentile method
+visit_ci_mean %>%
+  summarize(l = quantile(stat, 0.05),
+            u = quantile(stat, 0.95))
+```
+
+```{r}
+# Calculate 15000 bootstrap SDs
+visit_ci_sd <- ncbirths_complete_visits %>%
+  specify(response = 'visits') %>%
+  generate(reps=15000, type="bootstrap") %>%
+  calculate(stat = 'sd')
+
+# Calculate the 90% CI via percentile method
+visit_ci_sd %>%
+  summarize(l = quantile(stat, 0.05),
+            u = quantile(stat, 0.95))
+```
+
+```{r}
+# Generate 15000 bootstrap samples centered at null
+rent_med_ht <- manhattan %>%
+  specify(response = 'rent') %>%
+  hypothesize(null = "point", med = 2500) %>% 
+  generate(reps = 15000, type = "bootstrap") %>% 
+  calculate(stat = "median")
+  
+# Calculate observed median
+rent_med_obs <- manhattan %>%
+  summarize(median(rent)) %>%
+  pull()
+
+# Calculate p-value
+rent_med_ht %>%
+  filter(stat > rent_med_obs) %>%
+  summarize(n()/15000)
+```
+
+
+```{r}
+# Generate 1500 bootstrap means centered at null
+weight_mean_ht <- ncbirths %>%
+  specify(response = 'weight') %>%
+  hypothesize(null = "point", mu = 7) %>% 
+  generate(reps=1500, type="bootstrap") %>% 
+  calculate(stat='mean')
+  
+# Calculate observed mean
+weight_mean_obs <- ncbirths %>%
+  summarise(mean(weight)) %>%
+  pull()
+
+# Calculate p-value
+weight_mean_ht %>%
+  filter(stat > weight_mean_obs) %>%
+  summarize(p_val = 2 * n() / 1500)
+```
+
+
+
+
+
+
+
