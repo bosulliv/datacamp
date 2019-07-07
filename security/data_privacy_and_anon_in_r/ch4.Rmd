@@ -1,0 +1,142 @@
+---
+title: "Chapter 4"
+output: html_notebook
+---
+
+# Chapter 4
+
+```{r}
+load('data.RData')
+```
+
+
+```{r}
+# Load dplyr and smoothmest packages
+library(dplyr)
+library(smoothmest)
+
+# Set Value of Epsilon
+eps <- 0.1
+
+# GS of Counts
+gs.count <- 1
+
+# Number of participants in each season
+fertility %>%
+	count(Season)
+```
+
+```{r}
+# Set the seed
+set.seed(42)
+
+# Apply the Laplace mechanism to each season
+winter <- rdoublex(1, 28, gs.count/eps) %>%
+	max(0)
+spring <- rdoublex(1, 37, gs.count/eps) %>%
+	max(0)
+summer <- rdoublex(1, 4, gs.count/eps) %>%
+	max(0)
+fall <- rdoublex(1, 31, gs.count/eps) %>%
+	max(0)
+```
+
+```{r}
+# Store noisy results
+seasons <- c(winter = winter, spring = spring, summer = summer, fall = fall)
+
+# Normalizing seasons
+seasons_normalized <- (seasons/sum(seasons)) * nrow(fertility)
+
+# Round the values
+round(seasons_normalized)
+```
+
+```{r}
+# Generate synthetic data for winter
+winter_synth <- rep(-1, 29)
+winter_synth
+
+# Generate synthetic data for spring
+spring_synth <- rep(-0.33, 38)
+spring_synth
+
+# Generate synthetic data for summer
+summer_synth <- rep(0.33, 0)
+summer_synth
+
+# Generate synthetic data for fall
+fall_synth <- rep(1, 33)
+fall_synth
+```
+
+```{r}
+# Calculate proportions
+fertility %>%
+	summarize_at(vars(Accident_Trauma, Surgical_Intervention), mean)
+
+# Number of Observations
+n <- nrow(fertility)
+
+# Set Value of Epsilon
+eps <- 0.1
+
+# GS of Proportion
+gs.prop <- 1 / n
+```
+
+```{r}
+accident_prop <- 0.44
+surgical_prop <- 0.51
+
+# Apply the Laplace mechanism
+set.seed(42)	
+
+accident_prop_noisy <- rdoublex(1, accident_prop, gs.prop / eps) 
+accident_prop_noisy 
+
+surgical_prop_noisy <- rdoublex(1, surgical_prop, gs.prop / eps) 
+surgical_prop_noisy
+
+# Generate Synthetic data
+accident_data_noisy <- rbinom(n, 1, accident_prop_noisy)
+surgical_data_noisy <- rbinom(n, 1, surgical_prop_noisy)
+```
+
+```{r}
+# Set Value of Epsilon
+eps <- 0.1 / 2
+
+# Number of observations
+n <- nrow(fertility)
+
+# Upper and lower bounds of age
+a <- 0
+b <- 1
+
+# GS of mean and variance for age
+gs.mean <- (b-a) / n
+gs.var <- (b-a)^2 / n
+```
+
+```{r}
+# Mean and variance of Age
+age_summary <- fertility %>%
+	summarize_at(vars(Age), funs(mean, var))
+age_summary
+
+# Apply the Laplace mechanism
+set.seed(42)
+
+age_mean_noisy <- rdoublex(1, age_summary$mean, gs.mean/eps)
+age_var_noisy <- rdoublex(1, age_summary$var, gs.var/eps)
+
+# Generate Synthetic data
+age_noisy <- rnorm(100, age_mean_noisy, sqrt(age_var_noisy))
+
+# Hard Bounding the data
+age_noisy[age_noisy < 0] <- 0
+age_noisy[age_noisy > 1] <- 1
+```
+
+
