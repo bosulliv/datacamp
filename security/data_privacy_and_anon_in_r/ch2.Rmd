@@ -1,0 +1,97 @@
+---
+title: "Chapter 2"
+output: html_notebook
+---
+
+# Chapter 2
+
+Epsilon defines how private we want to keep some information, and it creates a privacy budget. You reduce epsilon to increase the amount of data hiding required. There isn't a strict scale of epsilon - but the principle applies that large values leak data, and small hide data.
+
+```{r}
+load('data.RData')
+```
+
+## Global sensititivy 
+Global sensitibity is the l1 distance of how the answer to a query changes if the most extreme case is present or absent from a dataset.
+
+For example if Bill Gates attended a conference, this would not likely change the median salary of people that attended the conference, and therefore the global sensitivity would be small.
+
+But if the mean salary were calculated, that would change a lot, and have a large global sensitivity: In this case, we would have to inject a lot of noise to protect the change that individual made to the answer.
+
+```{r}
+# Number of observations
+n <- nrow(fertility)
+
+# Global sensitivity of counts
+gs.count <- 1
+
+# Global sensitivity of proportions
+gs.prop <- 1/n
+```
+
+```{r}
+# Lower bound of Hours_Sitting
+a <- 0
+
+# Upper bound of Hours_Sitting
+b <- 1
+
+# Global sensitivity of mean for Hours_Sitting
+gs.mean <- (b-a) / n
+
+# Global sensitivity of proportions Hours_Sitting
+gs.var <- (b-a)^2 / n
+```
+
+```{r}
+library(dplyr)
+library(smoothmest)
+
+# How many participants had a Surgical_Intervention?
+n_surgeries <- fertility %>%
+    summarize_at(vars(Surgical_Intervention), sum) %>%
+    pull()
+
+n_surgeries
+
+# Set the seed
+set.seed(42)
+
+# Apply the Laplace mechanism
+eps <- 0.1
+rdoublex(1, n_surgeries, 1/eps)
+```
+
+```{r}
+# Proportion of Accident_Trauma
+accident_prop <- fertility %>%
+    summarise_at(vars(Accident_Trauma), mean) %>%
+    pull()
+
+accident_prop
+
+# Set the seed
+set.seed(42)
+
+# Apply the Laplace mechanism
+eps <- 0.1
+rdoublex(1, accident_prop, gs.prop/eps)
+```
+
+```{r}
+# Mean and Variance of Hours Sitting
+hours_summary <- fertility %>%
+    summarize_at(vars(Hours_Sitting), funs(mean, var))
+hours_summary
+
+# Setup
+set.seed(42)
+eps <- 0.1
+
+# Laplace mechanism to mean
+rdoublex(1, hours_summary$mean, gs.mean/eps)
+
+# Laplace mechanism to variance
+rdoublex(1, hours_summary$var, gs.var/eps)
+```
+
