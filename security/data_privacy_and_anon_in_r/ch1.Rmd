@@ -1,0 +1,118 @@
+---
+title: "Chapter 1"
+output: html_notebook
+---
+
+# Overview
+I have wanted to expore this topic for some time. It seems the perfect answer to data encapsulation even inside a company.
+
+Let's load the course data:
+```{r}
+load('./data.RData')
+```
+
+```{r}
+library(dplyr)
+
+whitehouse
+```
+
+```{r}
+# Set seed to make this reproducible
+set.seed(42)
+
+# Replace names with random numbers from 1 to 1000
+whitehouse_no_names <- whitehouse %>%
+    mutate(Name = sample(1:1000, nrow(whitehouse)))
+
+whitehouse_no_names
+```
+
+```{r}
+# Rounding Salary to the nearest ten thousand
+whitehouse_no_identifiers <- whitehouse_no_names %>%
+    mutate(Salary = round(Salary, digits = -4))
+
+whitehouse_no_identifiers
+```
+
+```{r}
+# Convert the salaries into three categories
+whitehouse.gen <- whitehouse %>%
+    mutate(Salary = if_else(Salary < 50000, 0, 
+                           if_else(Salary >= 50000 & Salary < 100000, 1, 2)))
+	
+whitehouse.gen
+```
+
+```{r}
+# Bottom Coding
+whitehouse.bottom <- whitehouse %>%
+    mutate(Salary = if_else(Salary <= 45000, 45000, Salary))
+
+# Filter Results	
+whitehouse.bottom %>%
+    filter(Salary <= 45000)
+```
+
+```{r}
+# View fertility data
+fertility
+
+# Number of participants with Surgical_Intervention and Diagnosis
+fertility %>%
+	summarize_at(vars(Surgical_Intervention, Diagnosis), sum)
+```
+```{r}
+# Mean and Standard Deviation of Age
+fertility %>%
+	summarize_at(vars(Age), funs(mean, sd))
+```
+```{r}
+# Counts of the Groups in High_Fevers	
+fertility %>%
+	count(High_Fevers)
+```
+
+```{r}
+# Counts of the Groups in Child_Disease	and Accident_Trauma	
+fertility %>%
+	count(Child_Disease, Accident_Trauma)
+```
+
+```{r}
+# Find proportions
+fert_summary <- fertility %>%
+	summarize_at(vars(Accident_Trauma, Surgical_Intervention), mean)
+fert_summary
+
+# Set seed
+set.seed(42)
+
+# Generate Synthetic data
+accident <- rbinom(100, 1, fert_summary$Accident_Trauma)
+surgical <- rbinom(100, 1, fert_summary$Surgical_Intervention)
+```
+
+```{r}
+# Square root Transformation of Salary
+whitehouse.salary <- whitehouse %>%
+	mutate(Salary = sqrt(Salary))
+
+# Calculate the mean and standard deviation
+salary_stats <- whitehouse.salary %>%
+	summarise_at(vars(Salary), funs(mean, sd))
+
+salary_stats
+
+# Generate Synthetic data
+set.seed(42)
+salary_transformed <- rnorm(nrow(whitehouse), salary_stats$mean, salary_stats$sd)
+
+# Square the generated data
+salary_original <- salary_transformed * salary_transformed
+
+# Hard bound
+salary <- if_else(salary_original < 0, 0, salary_original)
+```
+
