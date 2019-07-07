@@ -1,0 +1,185 @@
+---
+title: "Chapter 3"
+output: html_notebook
+---
+
+## Sequential Composition
+If you send the repated queries to the same dataset, the epsilon is divided amongst the repeating queries. e.g. mean and then max of dataset - epsilon is divided by two.
+
+In reality - how do you predict that though?
+
+```{r}
+load('data.RData')
+```
+
+```{r}
+# Load dplyr and smoothmest packages
+library(dplyr)
+library(smoothmest)
+
+# Set Value of Epsilon
+eps <- 0.1 / 2
+```
+
+```{r}
+# Number of observations
+n <- nrow(fertility)
+
+# Lower bound of Age
+a <- 0
+
+# Upper bound of Age
+b <- 1
+
+# GS of counts for Diagnosis
+gs.count <- 1
+
+# GS of mean for Age
+gs.mean <- (b-a)/n
+```
+
+```{r}
+# Number of Participants with abnormal diagnosis
+n_diagnosis <- fertility %>%
+    summarise_at(vars(Diagnosis), sum)
+
+n_diagnosis
+	
+# Mean of age
+mean_age <- fertility %>%
+    summarise_at(vars(Age), mean)
+
+mean_age
+```
+
+```{r}
+# Number of Participants with abnormal diagnosis
+n_diagnosis <- fertility %>%
+	summarize_at(vars(Diagnosis), sum) %>%
+    pull()
+
+# Mean of age
+mean_age <- fertility %>%
+	summarize_at(vars(Age), mean) %>%
+    pull()
+
+# Set seed
+set.seed(42)
+
+# Laplace mechanism to the count of abnormal diagnosis
+rdoublex(1, n_diagnosis, 1/eps)
+
+# Laplace mechanism to the mean of age
+rdoublex(1, mean_age, gs.mean/eps)
+```
+
+## Parallel Composition
+If multiple queries are sent to different parts of the dataset - then we do not need to divide epsilon. 
+
+```{r}
+# Set Value of Epsilon
+eps <- 0.1
+
+# Mean of Age per diagnosis level 
+fertility %>%
+    group_by(Diagnosis) %>%
+    summarize_at(vars(Age), mean)
+```
+
+```{r}
+# Set the seed
+set.seed(42)
+
+# Laplace mechanism to the mean age of participants with an abnormal diagnoisis
+rdoublex(1, 0.71, gs.mean/eps)
+
+# Laplace mechanism to the mean age of participants with a normal diagnoisis
+rdoublex(1, 0.66, gs.mean/eps)
+```
+
+## Post-Processing
+If you can answer a new query from differential data already provided - then you do not need to use the privacy budget. For instance, if you take the counts of smoking, which has three groups. No smoke, occasional, frequent. Then you can calculate the first two groups with differential privacy, and answer the final group by taking the first 2 from the total real count.
+
+```{r}
+# Set Value of Epsilon
+eps <- 0.5 / (4-1)
+
+# GS of Counts
+gs.count <- 1
+
+# Number of participants in each of the four seasons
+fertility %>%
+	count(Season)
+```
+
+```{r}
+# Set the seed
+set.seed(42)
+
+# Laplace mechanism to the number of participants who were evaluated in the winter, spring, and summer
+winter <- rdoublex(1, 28, gs.count / eps) %>%
+  round()
+	
+spring <- rdoublex(1, 37, gs.count / eps) %>%
+	round()
+	
+summer <- rdoublex(1, 4, gs.count / eps) %>%
+	round()
+
+# Post-process based on previous queries
+fall <- nrow(fertility) - winter - spring - summer
+```
+
+## Impossible and Inconsistent Answers
+
+```{r}
+# Set Value of Epsilon
+eps <- 0.01
+
+# GS of counts
+gs.count <- 1
+
+# Number of Participants with Child_Disease
+fertility %>%
+	summarize_at(vars(Child_Disease), sum)
+```
+
+```{r}
+# Apply the Laplace mechanism
+set.seed(42)	
+lap_childhood <- rdoublex(1, 87, gs.count / eps) %>%
+	round()
+
+# Total number of observations in fertility
+max_value <- nrow(fertility)
+
+# Bound the value such that the noisy answer does not exceed the total number of observations
+ifelse(lap_childhood > max_value, max_value, lap_childhood)
+```
+
+```{r}
+eps <- 0.005
+gs.count <- 1
+
+# Set the seed
+set.seed(42)
+
+# Apply the Laplace mechanism and avoid negative counts
+fever1 <- rdoublex(1, 9, gs.count/eps) %>%
+	max(0)
+fever2 <- rdoublex(1, 63, gs.count/eps) %>%
+	max(0)
+fever3 <- rdoublex(1, 28, gs.count/eps) %>%
+	max(0)
+```
+
+```{r}
+fever <- c(fever1, fever2, fever3)
+
+# Normalize noise 
+fever_normalized <- (fever/sum(fever)) * (nrow(fertility))
+
+# Round the values
+round(fever_normalized)
+```
+
